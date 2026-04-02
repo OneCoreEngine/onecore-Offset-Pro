@@ -1,0 +1,5 @@
+{
+  "name": "OneCore Offset Finder",
+  "description": "A GitHub-themed web tool to analyze .so files and extract symbol offsets with JNI support.",
+  "requestFramePermissions": []
+}

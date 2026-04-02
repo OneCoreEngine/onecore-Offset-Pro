@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-muted: #8b949e;
+  --primary: #1f6feb;
+  --accent: #58a6ff;
+  --success: #238636;
+}
+
+[data-theme="cyberpunk"] {
+  --bg: #050505;
+  --surface: #101010;
+  --border: #00ff0033;
+  --text: #00ff00;
+  --text-muted: #00ff0099;
+  --primary: #00ff00;
+  --accent: #ff00ff;
+  --success: #00ff00;
+}
+
+[data-theme="minimal-light"] {
+  --bg: #ffffff;
+  --surface: #f6f8fa;
+  --border: #d0d7de;
+  --text: #1f2328;
+  --text-muted: #657b83;
+  --primary: #0969da;
+  --accent: #0969da;
+  --success: #1a7f37;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.bg-surface { background-color: var(--surface); }
+.border-color { border-color: var(--border); }
+.text-color { color: var(--text); }
+.text-muted-color { color: var(--text-muted); }
+.text-primary-color { color: var(--primary); }
+.text-accent-color { color: var(--accent); }
+.bg-primary-color { background-color: var(--primary); }
+.bg-success-color { background-color: var(--success); }
