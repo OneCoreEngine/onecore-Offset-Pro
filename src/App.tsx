@@ -101,11 +101,54 @@ export default function App() {
     toast.success('Copied to clipboard');
   };
 
+  const exportData = (format: 'json' | 'csv') => {
+    if (!currentResult) return;
+    
+    const scannerData = [
+      ...Object.entries(currentResult.foundOffsets).flatMap(([name, offsets]) => 
+        (offsets as string[]).map(off => ({ offset: off, type: 'AOB Match', context: name }))
+      ),
+      ...(currentResult.prologues || []).map(off => ({ 
+        offset: `0x${off.toString(16).toUpperCase()}`, 
+        type: 'Function Prologue', 
+        context: 'stp x29, x30, [sp, -0x10]!' 
+      }))
+    ];
+
+    let blob: Blob;
+    let fileName = `onecore_scan_${currentResult.fileName}_${new Date().getTime()}`;
+
+    if (format === 'json') {
+      blob = new Blob([JSON.stringify(scannerData, null, 2)], { type: 'application/json' });
+      fileName += '.json';
+    } else {
+      const csv = ['Offset,Type,Context', ...scannerData.map(d => `${d.offset},${d.type},${d.context}`)].join('\n');
+      blob = new Blob([csv], { type: 'text/csv' });
+      fileName += '.csv';
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported as ${format.toUpperCase()}`);
+  };
+
+  const copyAllOffsets = () => {
+    if (!currentResult) return;
+    const offsets = [
+      ...Object.values(currentResult.foundOffsets).flat(),
+      ...(currentResult.prologues || []).map(off => `0x${off.toString(16).toUpperCase()}`)
+    ].join('\n');
+    copyToClipboard(offsets);
+  };
+
   const currentResult = selectedLib ? allResults[selectedLib] : null;
 
   return (
     <div className="min-h-screen matrix-bg text-text font-sans selection:bg-accent/30 overflow-x-hidden">
-      <div className="scanline" />
       <Toaster position="top-right" theme="dark" />
 
       {/* Header */}
@@ -222,45 +265,113 @@ export default function App() {
                 className="space-y-6"
               >
                 {activeTab === 'scanner' && currentResult && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* AOB Detections */}
-                    {Object.entries(currentResult.foundOffsets).map(([name, offsets]) => (
-                      <div key={name} className="glass-panel p-4 space-y-3 group">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-accent uppercase tracking-widest">{name}</span>
-                          <Target className="w-4 h-4 text-muted group-hover:text-accent transition-colors" />
+                  <div className="space-y-4">
+                    {/* Scanner Controls */}
+                    <div className="flex flex-wrap items-center justify-between gap-4 glass-panel p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black text-accent uppercase tracking-widest">Total Offsets</span>
+                          <span className="text-xl font-black text-white">
+                            {Object.values(currentResult.foundOffsets).flat().length + (currentResult.prologues?.length || 0)}
+                          </span>
                         </div>
-                        <div className="space-y-2">
-                          {(offsets as string[]).map((off, i) => (
-                            <div key={i} className="flex items-center justify-between bg-bg/50 p-2 rounded-lg border border-accent/10">
-                              <code className="text-sm font-mono text-accent">{off}</code>
-                              <button onClick={() => copyToClipboard(off)} className="p-1.5 hover:bg-accent/10 rounded-lg transition-colors">
-                                <Copy className="w-4 h-4 text-accent/60" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                        <div className="h-8 w-px bg-accent/20" />
+                        <button 
+                          onClick={copyAllOffsets}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-accent/10 hover:bg-accent/20 text-accent rounded-lg text-xs font-bold transition-all border border-accent/20"
+                        >
+                          <Copy className="w-3 h-3" />
+                          Copy All
+                        </button>
                       </div>
-                    ))}
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => exportData('json')}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-surface border border-accent/20 text-accent rounded-lg text-xs font-bold hover:bg-accent/10 transition-all"
+                        >
+                          <Download className="w-3 h-3" />
+                          JSON
+                        </button>
+                        <button 
+                          onClick={() => exportData('csv')}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-surface border border-accent/20 text-accent rounded-lg text-xs font-bold hover:bg-accent/10 transition-all"
+                        >
+                          <File className="w-3 h-3" />
+                          CSV
+                        </button>
+                      </div>
+                    </div>
 
-                    {/* Prologues */}
-                    <div className="glass-panel p-4 space-y-3 md:col-span-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black text-white uppercase tracking-widest">Function Prologues</span>
-                        <span className="text-[10px] bg-accent/10 text-accent px-2 py-0.5 rounded-full font-black">
-                          {currentResult.prologues?.length || 0} Found
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-60 overflow-y-auto pr-2">
-                        {currentResult.prologues?.slice(0, 500).map((off, i) => (
-                          <button 
-                            key={i} 
-                            onClick={() => copyToClipboard(`0x${off.toString(16).toUpperCase()}`)}
-                            className="text-[10px] font-mono bg-bg/50 border border-accent/10 p-1.5 rounded hover:border-accent transition-colors text-accent/70 hover:text-accent"
-                          >
-                            0x{off.toString(16).toUpperCase()}
-                          </button>
-                        ))}
+                    {/* Scanner List */}
+                    <div className="glass-panel overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead className="bg-bg/50">
+                            <tr>
+                              <th className="p-4 text-xs font-black text-accent uppercase tracking-widest">Offset</th>
+                              <th className="p-4 text-xs font-black text-accent uppercase tracking-widest">Type</th>
+                              <th className="p-4 text-xs font-black text-accent uppercase tracking-widest">Context</th>
+                              <th className="p-4 text-xs font-black text-accent uppercase tracking-widest text-right">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-accent/5">
+                            {[
+                              ...Object.entries(currentResult.foundOffsets).flatMap(([name, offsets]) => 
+                                (offsets as string[]).map(off => ({ offset: off, type: 'AOB Match', context: name }))
+                              ),
+                              ...(currentResult.prologues || []).map(off => ({ 
+                                offset: `0x${off.toString(16).toUpperCase()}`, 
+                                type: 'Function Prologue', 
+                                context: 'stp x29, x30, [sp, -0x10]!' 
+                              }))
+                            ]
+                            .filter(item => 
+                              item.offset.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              item.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              item.context.toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .map((item, i) => (
+                              <tr key={i} className="hover:bg-accent/5 transition-colors group">
+                                <td className="p-4">
+                                  <button 
+                                    onClick={() => copyToClipboard(item.offset)}
+                                    className="font-mono text-sm text-accent hover:underline decoration-accent/30 underline-offset-4"
+                                  >
+                                    {item.offset}
+                                  </button>
+                                </td>
+                                <td className="p-4">
+                                  <span className={cn(
+                                    "text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest",
+                                    item.type === 'AOB Match' ? "bg-accent/10 text-accent" : "bg-white/10 text-white"
+                                  )}>
+                                    {item.type}
+                                  </span>
+                                </td>
+                                <td className="p-4">
+                                  <span className="text-xs text-white/70 font-medium">{item.context}</span>
+                                </td>
+                                <td className="p-4 text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <button 
+                                      onClick={() => copyToClipboard(item.offset)}
+                                      className="p-2 hover:bg-accent/10 rounded-lg transition-all text-accent/60 hover:text-accent"
+                                      title="Copy Offset"
+                                    >
+                                      <Copy className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                      className="p-2 hover:bg-accent/10 rounded-lg transition-all text-accent/60 hover:text-accent"
+                                      title="View Disassembly"
+                                    >
+                                      <Terminal className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
