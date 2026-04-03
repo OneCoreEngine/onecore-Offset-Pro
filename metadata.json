@@ -1,5 +1,5 @@
 {
   "name": "OneCore Bypass Maker",
-  "description": "A professional, client-side BGMI library offset extractor with advanced .text scanning, prologue detection, call graph analysis, and string XREF.",
+  "description": "Professional BGMI 64-bit library offset extractor with deep scanning, honeypot detection, and function call analysis.",
   "requestFramePermissions": []
 }
