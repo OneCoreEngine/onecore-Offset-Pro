@@ -339,6 +339,27 @@ export class ELFParser {
     return symbols;
   }
 
+  public getSectionHeaderOffset(): number {
+    const readUInt32 = (offset: number) => this.isLittleEndian ? this.buffer.readUInt32LE(offset) : this.buffer.readUInt32BE(offset);
+    const readBigUInt64 = (offset: number) => this.isLittleEndian ? this.buffer.readBigUInt64LE(offset) : this.buffer.readBigUInt64BE(offset);
+    return this.is64Bit ? Number(readBigUInt64(40)) : readUInt32(32);
+  }
+
+  public getSectionHeaderCount(): number {
+    const readUInt16 = (offset: number) => this.isLittleEndian ? this.buffer.readUInt16LE(offset) : this.buffer.readUInt16BE(offset);
+    return readUInt16(this.is64Bit ? 60 : 48);
+  }
+
+  public getSectionHeaderEntrySize(): number {
+    const readUInt16 = (offset: number) => this.isLittleEndian ? this.buffer.readUInt16LE(offset) : this.buffer.readUInt16BE(offset);
+    return readUInt16(this.is64Bit ? 58 : 46);
+  }
+
+  public getSectionHeaderStringIndex(): number {
+    const readUInt16 = (offset: number) => this.isLittleEndian ? this.buffer.readUInt16LE(offset) : this.buffer.readUInt16BE(offset);
+    return readUInt16(this.is64Bit ? 62 : 50);
+  }
+
   public getSections(): ELFSection[] {
     const readUInt16 = (offset: number) => this.isLittleEndian ? this.buffer.readUInt16LE(offset) : this.buffer.readUInt16BE(offset);
     const readUInt32 = (offset: number) => this.isLittleEndian ? this.buffer.readUInt32LE(offset) : this.buffer.readUInt32BE(offset);
@@ -691,5 +712,63 @@ export class ELFParser {
       case 3: return 'PROTECTED';
       default: return 'UNKNOWN';
     }
+  }
+
+  /**
+   * Extract all strings from a section (e.g., .rodata)
+   * @param sectionName Name of the section to extract from
+   * @param minLength Minimum string length (default 4)
+   */
+  public getStringsFromSection(sectionName: string = '.rodata', minLength: number = 4): string[] {
+    const sections = this.getSections();
+    const section = sections.find(s => s.name === sectionName);
+    if (!section) return [];
+
+    const data = new Uint8Array(this.buffer.slice(section.offset, section.offset + section.size));
+    const strings: string[] = [];
+    let currentStr = '';
+
+    for (let i = 0; i < data.length; i++) {
+      const b = data[i];
+      if (b >= 32 && b <= 126) {
+        currentStr += String.fromCharCode(b);
+      } else {
+        if (currentStr.length >= minLength) {
+          strings.push(currentStr);
+        }
+        currentStr = '';
+      }
+    }
+    if (currentStr.length >= minLength) {
+      strings.push(currentStr);
+    }
+
+    return strings;
+  }
+
+  /**
+   * Extract all strings from the entire binary
+   */
+  public getAllStrings(minLength: number = 4): string[] {
+    const data = new Uint8Array(this.buffer);
+    const strings: string[] = [];
+    let currentStr = '';
+
+    for (let i = 0; i < data.length; i++) {
+      const b = data[i];
+      if (b >= 32 && b <= 126) {
+        currentStr += String.fromCharCode(b);
+      } else {
+        if (currentStr.length >= minLength) {
+          strings.push(currentStr);
+        }
+        currentStr = '';
+      }
+    }
+    if (currentStr.length >= minLength) {
+      strings.push(currentStr);
+    }
+
+    return Array.from(new Set(strings)); // Unique strings
   }
 }

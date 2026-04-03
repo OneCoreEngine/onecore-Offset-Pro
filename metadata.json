@@ -1,5 +1,5 @@
 {
-  "name": "OneCore Offset Finder",
-  "description": "A GitHub-themed web tool to analyze .so files and extract symbol offsets with JNI support.",
+  "name": "OneCore Bypass Maker",
+  "description": "A professional, client-side BGMI library offset extractor with advanced .text scanning, prologue detection, call graph analysis, and string XREF.",
   "requestFramePermissions": []
 }
