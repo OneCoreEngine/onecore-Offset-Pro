@@ -260,13 +260,13 @@ async function renderHome() {
     if (!state.currentRepo) {
         elements.content.innerHTML = `
             <div class="space-y-6">
-                <div class="glass-card p-6 rounded-3xl border-violet-500/20">
+                <div class="glass-card p-6 rounded-3xl border-[#00ff66]/20">
                     <h3 class="text-xl font-black text-white tracking-tight">Welcome, ${state.user.name || state.user.login}!</h3>
-                    <p class="text-xs text-violet-300/60 mt-1 font-bold uppercase tracking-widest">Select a repository to start managing files.</p>
+                    <p class="text-xs text-[#00ff66]/60 mt-1 font-bold uppercase tracking-widest">Select a repository to start managing files.</p>
                 </div>
                 <div class="flex items-center justify-between px-2">
-                    <h4 class="text-[10px] font-black text-violet-300/40 uppercase tracking-widest">Recent Repositories</h4>
-                    <button onclick="switchTab('repos')" class="text-[10px] font-black text-violet-400 uppercase tracking-widest">View All</button>
+                    <h4 class="text-[10px] font-black text-[#00ff66]/40 uppercase tracking-widest">Recent Repositories</h4>
+                    <button onclick="switchTab('repos')" class="text-[10px] font-black text-[#00ff66] uppercase tracking-widest">View All</button>
                 </div>
                 <div id="home-repo-list" class="space-y-3">
                     <div class="loader mx-auto my-10"></div>
@@ -278,19 +278,19 @@ async function renderHome() {
         if (homeRepoList) {
             const recentRepos = state.repos.slice(0, 5);
             homeRepoList.innerHTML = recentRepos.map(repo => `
-                <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-violet-900/20" onclick="selectRepo('${repo.full_name}')">
+                <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-[#00ff66]/10" onclick="selectRepo('${repo.full_name}')">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-violet-900/20 rounded-2xl flex items-center justify-center text-violet-400">
+                        <div class="w-12 h-12 bg-[#00ff66]/10 rounded-2xl flex items-center justify-center text-[#00ff66]">
                             <i class="fas fa-book text-lg"></i>
                         </div>
                         <div>
                             <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                            <p class="text-[10px] text-violet-300/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-violet-500/60"></i>Private' : '<i class="fas fa-globe mr-1 text-violet-500/60"></i>Public'}</p>
+                            <p class="text-[10px] text-[#00ff66]/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#00ff66]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#00ff66]/60"></i>Public'}</p>
                         </div>
                     </div>
-                    <i class="fas fa-chevron-right text-violet-300/20 text-xs"></i>
+                    <i class="fas fa-chevron-right text-[#00ff66]/20 text-xs"></i>
                 </div>
-            `).join('') || '<p class="text-center text-violet-300/40 py-10 font-bold uppercase tracking-widest text-[10px]">No repositories found</p>';
+            `).join('') || '<p class="text-center text-[#00ff66]/40 py-10 font-bold uppercase tracking-widest text-[10px]">No repositories found</p>';
         }
     } else {
         elements.viewTitle.textContent = state.currentRepo.name;
@@ -308,22 +308,22 @@ function renderRepoList() {
     elements.content.innerHTML = `
         <div class="space-y-4">
             <div class="relative">
-                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-violet-300/20 text-sm"></i>
-                <input id="repo-search" type="text" placeholder="Search repositories..." class="w-full bg-violet-900/10 border border-violet-900/30 rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:border-violet-500/50 transition-all font-medium">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[#00ff66]/20 text-sm"></i>
+                <input id="repo-search" type="text" placeholder="Search repositories..." class="w-full bg-[#00ff66]/5 border border-[#00ff66]/20 rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:border-[#00ff66]/50 transition-all font-medium">
             </div>
             <div id="repo-list-container" class="space-y-3">
                 ${state.repos.map(repo => `
-                    <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-violet-900/20" onclick="selectRepo('${repo.full_name}')">
+                    <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-[#00ff66]/10" onclick="selectRepo('${repo.full_name}')">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-violet-900/20 rounded-2xl flex items-center justify-center text-violet-400 shadow-inner">
+                            <div class="w-12 h-12 bg-[#00ff66]/10 rounded-2xl flex items-center justify-center text-[#00ff66] shadow-inner">
                                 <i class="fas fa-book text-lg"></i>
                             </div>
                             <div>
                                 <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                                <p class="text-[10px] text-violet-300/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-violet-500/60"></i>Private' : '<i class="fas fa-globe mr-1 text-violet-500/60"></i>Public'}</p>
+                                <p class="text-[10px] text-[#00ff66]/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#00ff66]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#00ff66]/60"></i>Public'}</p>
                             </div>
                         </div>
-                        <i class="fas fa-chevron-right text-violet-300/20 text-xs"></i>
+                        <i class="fas fa-chevron-right text-[#00ff66]/20 text-xs"></i>
                     </div>
                 `).join('')}
             </div>
@@ -334,17 +334,17 @@ function renderRepoList() {
         const term = e.target.value.toLowerCase();
         const filtered = state.repos.filter(r => r.name.toLowerCase().includes(term));
         document.getElementById('repo-list-container').innerHTML = filtered.map(repo => `
-            <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-violet-900/20" onclick="selectRepo('${repo.full_name}')">
+            <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-[#00ff66]/10" onclick="selectRepo('${repo.full_name}')">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-violet-900/20 rounded-2xl flex items-center justify-center text-violet-400 shadow-inner">
+                    <div class="w-12 h-12 bg-[#00ff66]/10 rounded-2xl flex items-center justify-center text-[#00ff66] shadow-inner">
                         <i class="fas fa-book text-lg"></i>
                     </div>
                     <div>
                         <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                        <p class="text-[10px] text-violet-300/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-violet-500/60"></i>Private' : '<i class="fas fa-globe mr-1 text-violet-500/60"></i>Public'}</p>
+                        <p class="text-[10px] text-[#00ff66]/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#00ff66]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#00ff66]/60"></i>Public'}</p>
                     </div>
                 </div>
-                <i class="fas fa-chevron-right text-violet-300/20 text-xs"></i>
+                <i class="fas fa-chevron-right text-[#00ff66]/20 text-xs"></i>
             </div>
         `).join('');
     };
@@ -353,16 +353,16 @@ function renderRepoList() {
 function renderBreadcrumbs() {
     const parts = state.currentPath ? state.currentPath.split('/') : [];
     let html = `
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 text-[10px] font-black uppercase tracking-widest text-violet-300/40">
-            <span class="hover:text-violet-400 cursor-pointer bg-violet-900/20 px-3 py-1.5 rounded-lg border border-violet-500/10" onclick="navigatePath('')">Root</span>
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 text-[10px] font-black uppercase tracking-widest text-[#00ff66]/40">
+            <span class="hover:text-[#00ff66] cursor-pointer bg-[#00ff66]/10 px-3 py-1.5 rounded-lg border border-[#00ff66]/20" onclick="navigatePath('')">Root</span>
     `;
     
     let path = '';
     parts.forEach((part, i) => {
         path += (i === 0 ? '' : '/') + part;
         html += `
-            <i class="fas fa-chevron-right text-[8px] text-violet-300/10"></i>
-            <span class="hover:text-violet-400 cursor-pointer ${i === parts.length - 1 ? 'text-violet-400' : ''}" onclick="navigatePath('${path}')">${part}</span>
+            <i class="fas fa-chevron-right text-[8px] text-[#00ff66]/10"></i>
+            <span class="hover:text-[#00ff66] cursor-pointer ${i === parts.length - 1 ? 'text-[#00ff66]' : ''}" onclick="navigatePath('${path}')">${part}</span>
         `;
     });
     
@@ -373,37 +373,37 @@ function renderBreadcrumbs() {
 function renderContentsList() {
     const listHtml = state.contents.map(item => {
         const isDir = item.type === 'dir';
-        const icon = isDir ? 'fa-folder text-violet-400' : getFileIcon(item.name);
+        const icon = isDir ? 'fa-folder text-[#00ff66]' : getFileIcon(item.name);
         return `
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between group border-violet-900/20 active:scale-95 transition-all">
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between group border-[#00ff66]/10 active:scale-95 transition-all">
                 <div class="flex items-center gap-4 flex-1 min-w-0" onclick="${isDir ? `navigatePath('${item.path}')` : `downloadFile('${item.download_url}', '${item.name}')`}">
-                    <div class="w-10 h-10 bg-violet-900/10 rounded-xl flex items-center justify-center ${isDir ? 'text-violet-400' : 'text-violet-300/40'}">
+                    <div class="w-10 h-10 bg-[#00ff66]/5 rounded-xl flex items-center justify-center ${isDir ? 'text-[#00ff66]' : 'text-[#00ff66]/40'}">
                         <i class="fas ${icon} text-lg"></i>
                     </div>
                     <div class="min-w-0">
                         <h4 class="text-xs font-black text-white truncate tracking-tight">${item.name}</h4>
-                        <p class="text-[9px] text-violet-300/40 font-black uppercase tracking-widest mt-0.5">${isDir ? 'Folder' : formatSize(item.size)}</p>
+                        <p class="text-[9px] text-[#00ff66]/40 font-black uppercase tracking-widest mt-0.5">${isDir ? 'Folder' : formatSize(item.size)}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
                     ${isDir ? `
-                        <button onclick="downloadFolderAsZip('${item.path}', '${item.name}')" class="p-2 text-violet-400/40 hover:text-violet-400 transition-colors">
+                        <button onclick="downloadFolderAsZip('${item.path}', '${item.name}')" class="p-2 text-[#00ff66]/40 hover:text-[#00ff66] transition-colors">
                             <i class="fas fa-file-archive"></i>
                         </button>
                     ` : `
-                        <button onclick="downloadFile('${item.download_url}', '${item.name}')" class="p-2 text-violet-400/40 hover:text-violet-400 transition-colors">
+                        <button onclick="downloadFile('${item.download_url}', '${item.name}')" class="p-2 text-[#00ff66]/40 hover:text-[#00ff66] transition-colors">
                             <i class="fas fa-download"></i>
                         </button>
                     `}
                 </div>
             </div>
         `;
-    }).join('') || '<p class="text-center text-violet-300/40 py-10 font-black uppercase tracking-widest text-[10px]">This folder is empty</p>';
+    }).join('') || '<p class="text-center text-[#00ff66]/40 py-10 font-black uppercase tracking-widest text-[10px]">This folder is empty</p>';
     
     const headerHtml = `
         <div class="flex items-center justify-between px-2 mb-4 mt-6">
-            <h4 class="text-[10px] font-black text-violet-300/40 uppercase tracking-widest">Files & Folders</h4>
-            <button onclick="downloadFolderAsZip('${state.currentPath}', '${state.currentRepo.name}')" class="text-[10px] font-black text-violet-400 uppercase tracking-widest bg-violet-900/20 px-3 py-1.5 rounded-lg border border-violet-500/20 active:scale-95 transition-all">
+            <h4 class="text-[10px] font-black text-[#00ff66]/40 uppercase tracking-widest">Files & Folders</h4>
+            <button onclick="downloadFolderAsZip('${state.currentPath}', '${state.currentRepo.name}')" class="text-[10px] font-black text-[#00ff66] uppercase tracking-widest bg-[#00ff66]/10 px-3 py-1.5 rounded-lg border border-[#00ff66]/20 active:scale-95 transition-all">
                 <i class="fas fa-file-archive mr-1"></i> Download ZIP
             </button>
         </div>
@@ -416,49 +416,49 @@ function renderUpload() {
     elements.viewTitle.textContent = "Upload Files";
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl space-y-4 border-violet-900/20">
-                <h4 class="text-[10px] font-black text-violet-400 uppercase tracking-widest">Target Repository</h4>
-                <select id="upload-repo" class="w-full bg-violet-900/10 border border-violet-900/30 rounded-2xl p-4 text-sm text-white outline-none focus:border-violet-500/50 appearance-none font-bold">
+            <div class="glass-card p-6 rounded-3xl space-y-4 border-[#00ff66]/10">
+                <h4 class="text-[10px] font-black text-[#00ff66] uppercase tracking-widest">Target Repository</h4>
+                <select id="upload-repo" class="w-full bg-[#00ff66]/5 border border-[#00ff66]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#00ff66]/50 appearance-none font-bold">
                     <option value="">Select a repository</option>
                     ${state.repos.map(r => `<option value="${r.full_name}">${r.full_name}</option>`).join('')}
                 </select>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-violet-300/40 uppercase tracking-widest ml-1">Branch</label>
-                        <input id="upload-branch" type="text" value="main" class="w-full bg-violet-900/10 border border-violet-900/30 rounded-2xl p-4 text-sm text-white outline-none focus:border-violet-500/50 font-bold transition-all">
+                        <label class="text-[10px] font-black text-[#00ff66]/40 uppercase tracking-widest ml-1">Branch</label>
+                        <input id="upload-branch" type="text" value="main" class="w-full bg-[#00ff66]/5 border border-[#00ff66]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#00ff66]/50 font-bold transition-all">
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black text-violet-300/40 uppercase tracking-widest ml-1">Path</label>
-                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-violet-900/10 border border-violet-900/30 rounded-2xl p-4 text-sm text-white outline-none focus:border-violet-500/50 font-bold transition-all">
+                        <label class="text-[10px] font-black text-[#00ff66]/40 uppercase tracking-widest ml-1">Path</label>
+                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#00ff66]/5 border border-[#00ff66]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#00ff66]/50 font-bold transition-all">
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-violet-900/20 border-dashed border-2 hover:border-violet-500/30">
-                    <div class="w-12 h-12 bg-violet-900/20 rounded-2xl flex items-center justify-center text-violet-400">
+                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#00ff66]/10 border-dashed border-2 hover:border-[#00ff66]/30">
+                    <div class="w-12 h-12 bg-[#00ff66]/10 rounded-2xl flex items-center justify-center text-[#00ff66]">
                         <i class="fas fa-file-alt text-xl"></i>
                     </div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-violet-300/60">Select Files</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-[#00ff66]/60">Select Files</span>
                     <input type="file" id="file-input" multiple class="hidden">
                 </label>
-                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-violet-900/20 border-dashed border-2 hover:border-violet-500/30">
-                    <div class="w-12 h-12 bg-violet-900/20 rounded-2xl flex items-center justify-center text-violet-400">
+                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#00ff66]/10 border-dashed border-2 hover:border-[#00ff66]/30">
+                    <div class="w-12 h-12 bg-[#00ff66]/10 rounded-2xl flex items-center justify-center text-[#00ff66]">
                         <i class="fas fa-folder-open text-xl"></i>
                     </div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-violet-300/60">Select Folder</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-[#00ff66]/60">Select Folder</span>
                     <input type="file" id="folder-input" webkitdirectory class="hidden">
                 </label>
             </div>
 
-            <div id="upload-status" class="hidden glass-card p-6 rounded-3xl space-y-4 border-violet-500/20">
+            <div id="upload-status" class="hidden glass-card p-6 rounded-3xl space-y-4 border-[#00ff66]/20">
                 <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                    <span id="upload-progress-text" class="text-violet-400">Uploading...</span>
+                    <span id="upload-progress-text" class="text-[#00ff66]">Uploading...</span>
                     <span id="upload-percentage" class="text-white">0%</span>
                 </div>
-                <div class="h-2 bg-violet-900/20 rounded-full overflow-hidden">
-                    <div id="upload-progress-bar" class="h-full bg-violet-500 transition-all duration-300 shadow-[0_0_10px_rgba(139,92,246,0.5)]" style="width: 0%"></div>
+                <div class="h-2 bg-[#00ff66]/10 rounded-full overflow-hidden">
+                    <div id="upload-progress-bar" class="h-full bg-[#00ff66] transition-all duration-300 shadow-[0_0_10px_rgba(0,255,102,0.5)]" style="width: 0%"></div>
                 </div>
             </div>
 
@@ -488,38 +488,38 @@ function renderSettings() {
     elements.viewTitle.textContent = "Settings";
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl flex items-center gap-5 border-violet-900/20">
+            <div class="glass-card p-6 rounded-3xl flex items-center gap-5 border-[#00ff66]/10">
                 <div class="relative">
-                    <img src="${state.user.avatar_url}" class="w-20 h-20 rounded-2xl border-2 border-violet-500/20 shadow-lg">
-                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-violet-500 rounded-full border-4 border-[#0f0a1f] shadow-lg"></div>
+                    <img src="${state.user.avatar_url}" class="w-20 h-20 rounded-2xl border-2 border-[#00ff66]/20 shadow-lg">
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-[#00ff66] rounded-full border-4 border-[#111111] shadow-lg"></div>
                 </div>
                 <div>
                     <h3 class="text-xl font-black text-white tracking-tighter">${state.user.name || state.user.login}</h3>
-                    <p class="text-[10px] text-violet-400 font-black uppercase tracking-widest mt-1">@${state.user.login}</p>
+                    <p class="text-[10px] text-[#00ff66] font-black uppercase tracking-widest mt-1">@${state.user.login}</p>
                 </div>
             </div>
 
-            <div class="glass-card p-6 rounded-3xl space-y-4 border-violet-900/20">
-                <h4 class="text-[10px] font-black text-violet-400 uppercase tracking-widest">Configuration</h4>
+            <div class="glass-card p-6 rounded-3xl space-y-4 border-[#00ff66]/10">
+                <h4 class="text-[10px] font-black text-[#00ff66] uppercase tracking-widest">Configuration</h4>
                 <div class="space-y-3">
-                    <label class="text-[10px] font-black text-violet-300/40 uppercase tracking-widest ml-1">GitHub Client ID</label>
+                    <label class="text-[10px] font-black text-[#00ff66]/40 uppercase tracking-widest ml-1">GitHub Client ID</label>
                     <div class="flex gap-2">
-                        <input id="settings-client-id" type="text" value="${currentClientId === 'YOUR_GITHUB_CLIENT_ID' ? '' : currentClientId}" placeholder="Enter Client ID" class="flex-1 bg-violet-900/10 border border-violet-900/30 rounded-2xl p-4 text-xs text-white outline-none focus:border-violet-500/50 font-bold transition-all">
+                        <input id="settings-client-id" type="text" value="${currentClientId === 'YOUR_GITHUB_CLIENT_ID' ? '' : currentClientId}" placeholder="Enter Client ID" class="flex-1 bg-[#00ff66]/5 border border-[#00ff66]/20 rounded-2xl p-4 text-xs text-white outline-none focus:border-[#00ff66]/50 font-bold transition-all">
                         <button id="btn-save-client-id" class="btn-primary text-white px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest">Save</button>
                     </div>
-                    <p class="text-[9px] text-violet-300/30 font-bold uppercase tracking-tighter ml-1">Required for client-side authorize call.</p>
+                    <p class="text-[9px] text-[#00ff66]/30 font-bold uppercase tracking-tighter ml-1">Required for client-side authorize call.</p>
                 </div>
             </div>
 
-            <div class="glass-card rounded-3xl overflow-hidden divide-y divide-violet-900/20 border-violet-900/20">
+            <div class="glass-card rounded-3xl overflow-hidden divide-y divide-[#00ff66]/10 border-[#00ff66]/10">
                 <div class="p-5 flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 bg-violet-900/20 rounded-xl flex items-center justify-center text-violet-400">
+                        <div class="w-10 h-10 bg-[#00ff66]/10 rounded-xl flex items-center justify-center text-[#00ff66]">
                             <i class="fas fa-shield-alt"></i>
                         </div>
                         <span class="text-xs font-black text-white uppercase tracking-tight">Token Status</span>
                     </div>
-                    <span class="text-[9px] bg-violet-900/20 text-violet-400 px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-violet-500/20">Active</span>
+                    <span class="text-[9px] bg-[#00ff66]/10 text-[#00ff66] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-[#00ff66]/20">Active</span>
                 </div>
                 <div class="p-5 flex items-center justify-between active:bg-red-500/5 transition-colors" onclick="logout()">
                     <div class="flex items-center gap-4 text-red-500">
@@ -528,31 +528,31 @@ function renderSettings() {
                         </div>
                         <span class="text-xs font-black uppercase tracking-tight">Sign Out</span>
                     </div>
-                    <i class="fas fa-chevron-right text-violet-300/10 text-xs"></i>
+                    <i class="fas fa-chevron-right text-[#00ff66]/10 text-xs"></i>
                 </div>
             </div>
 
-            <div class="glass-card p-6 rounded-3xl space-y-5 border-violet-900/20">
-                <h4 class="text-[10px] font-black text-violet-400 uppercase tracking-widest">Quick Setup Guide</h4>
-                <div class="space-y-4 text-[11px] text-violet-300/50 font-medium leading-relaxed">
+            <div class="glass-card p-6 rounded-3xl space-y-5 border-[#00ff66]/10">
+                <h4 class="text-[10px] font-black text-[#00ff66] uppercase tracking-widest">Quick Setup Guide</h4>
+                <div class="space-y-4 text-[11px] text-[#00ff66]/50 font-medium leading-relaxed">
                     <div class="flex gap-4">
-                        <span class="w-6 h-6 bg-violet-900/20 rounded-lg flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0 border border-violet-500/10">1</span>
+                        <span class="w-6 h-6 bg-[#00ff66]/10 rounded-lg flex items-center justify-center text-[10px] font-black text-[#00ff66] shrink-0 border border-[#00ff66]/20">1</span>
                         <p>Go to <span class="text-white">GitHub Settings</span> > <span class="text-white">Developer settings</span> > <span class="text-white">OAuth Apps</span>.</p>
                     </div>
                     <div class="flex gap-4">
-                        <span class="w-6 h-6 bg-violet-900/20 rounded-lg flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0 border border-violet-500/10">2</span>
+                        <span class="w-6 h-6 bg-[#00ff66]/10 rounded-lg flex items-center justify-center text-[10px] font-black text-[#00ff66] shrink-0 border border-[#00ff66]/20">2</span>
                         <p>Click <span class="text-white">New OAuth App</span>. Set Homepage URL to this app's URL.</p>
                     </div>
                     <div class="flex gap-4">
-                        <span class="w-6 h-6 bg-violet-900/20 rounded-lg flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0 border border-violet-500/10">3</span>
+                        <span class="w-6 h-6 bg-[#00ff66]/10 rounded-lg flex items-center justify-center text-[10px] font-black text-[#00ff66] shrink-0 border border-[#00ff66]/20">3</span>
                         <p>Set Callback URL to <span class="text-white">${window.location.origin}/callback.html</span>.</p>
                     </div>
                     <div class="flex gap-4">
-                        <span class="w-6 h-6 bg-violet-900/20 rounded-lg flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0 border border-violet-500/10">4</span>
+                        <span class="w-6 h-6 bg-[#00ff66]/10 rounded-lg flex items-center justify-center text-[10px] font-black text-[#00ff66] shrink-0 border border-[#00ff66]/20">4</span>
                         <p>Copy the <span class="text-white">Client ID</span> and paste it above.</p>
                     </div>
                     <div class="flex gap-4">
-                        <span class="w-6 h-6 bg-violet-900/20 rounded-lg flex items-center justify-center text-[10px] font-black text-violet-400 shrink-0 border border-violet-500/10">5</span>
+                        <span class="w-6 h-6 bg-[#00ff66]/10 rounded-lg flex items-center justify-center text-[10px] font-black text-[#00ff66] shrink-0 border border-[#00ff66]/20">5</span>
                         <p>Set <span class="text-white">GITHUB_CLIENT_SECRET</span> in your server environment.</p>
                     </div>
                 </div>
@@ -756,7 +756,7 @@ function formatSize(bytes) {
 
 function showToast(message, type = 'success') {
     elements.toast.textContent = message;
-    elements.toast.className = `fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-sm font-bold shadow-2xl transition-all pointer-events-none z-[200] ${type === 'error' ? 'bg-red-600' : 'bg-violet-600'} text-white`;
+    elements.toast.className = `fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-sm font-bold shadow-2xl transition-all pointer-events-none z-[200] ${type === 'error' ? 'bg-red-600 text-white' : 'bg-[#00ff66] text-black'}`;
     elements.toast.classList.add('opacity-100', 'bottom-28');
     setTimeout(() => {
         elements.toast.classList.remove('opacity-100', 'bottom-28');

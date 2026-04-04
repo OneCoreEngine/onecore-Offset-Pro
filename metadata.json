@@ -1,5 +1,5 @@
 {
-  "name": "OneCore GitHub File Manager",
+  "name": "OneCore GitHub",
   "description": "A production-ready mobile-first PWA for managing GitHub files with OAuth PKCE authentication.",
   "requestFramePermissions": []
 }
