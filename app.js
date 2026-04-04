@@ -92,6 +92,14 @@ function setupEventListeners() {
 // --- Authentication (Device Flow) ---
 
 async function startDeviceFlow() {
+    const clientId = localStorage.getItem('gh_client_id') || GITHUB_CLIENT_ID;
+    
+    if (!clientId || clientId === 'YOUR_GITHUB_CLIENT_ID') {
+        showToast("Please set GitHub Client ID in Settings first", 'error');
+        switchTab('settings');
+        return;
+    }
+
     elements.loginInitial.classList.add('hidden');
     elements.loginDevice.classList.remove('hidden');
     
@@ -99,7 +107,7 @@ async function startDeviceFlow() {
         const res = await fetch(`${GITHUB_AUTH_BASE}/device/code`, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ client_id: GITHUB_CLIENT_ID, scope: 'repo,user' })
+            body: JSON.stringify({ client_id: clientId, scope: 'repo,user' })
         });
         
         const data = await res.json();
@@ -108,7 +116,7 @@ async function startDeviceFlow() {
         elements.userCode.textContent = data.user_code;
         elements.btnOpenGithub.onclick = () => window.open(data.verification_uri, '_blank');
         
-        pollForToken(data.device_code, data.interval || 5);
+        pollForToken(data.device_code, data.interval || 5, clientId);
     } catch (err) {
         showToast(err.message, 'error');
         elements.loginInitial.classList.remove('hidden');
@@ -116,14 +124,14 @@ async function startDeviceFlow() {
     }
 }
 
-async function pollForToken(deviceCode, interval) {
+async function pollForToken(deviceCode, interval, clientId) {
     const poll = setInterval(async () => {
         try {
             const res = await fetch(`${GITHUB_AUTH_BASE}/oauth/access_token`, {
                 method: 'POST',
                 headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    client_id: GITHUB_CLIENT_ID,
+                    client_id: clientId,
                     device_code: deviceCode,
                     grant_type: 'urn:ietf:params:oauth:grant-type:device_code'
                 })
@@ -172,8 +180,21 @@ function logout() {
 // --- UI Navigation ---
 
 function showAuthScreen() {
+    const clientId = localStorage.getItem('gh_client_id') || GITHUB_CLIENT_ID;
+    const isMissingId = !clientId || clientId === 'YOUR_GITHUB_CLIENT_ID';
+    
     elements.authScreen.classList.remove('hidden');
     elements.appContainer.classList.add('hidden');
+    
+    if (isMissingId) {
+        const warning = document.createElement('div');
+        warning.className = 'mt-6 p-4 glass-card rounded-xl border-red-500/30 text-red-400 text-xs';
+        warning.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            Client ID missing. Please configure it in Settings after logging in (or set VITE_GITHUB_CLIENT_ID).
+        `;
+        elements.loginInitial.appendChild(warning);
+    }
 }
 
 function showApp() {
@@ -220,9 +241,46 @@ function renderTab(tab) {
 
 async function renderHome() {
     if (!state.currentRepo) {
-        elements.viewTitle.textContent = "Repositories";
+        elements.viewTitle.textContent = "OneCore Home";
+        elements.content.innerHTML = `
+            <div class="space-y-6">
+                <div class="glass-card p-6 rounded-2xl bg-gradient-to-br from-purple-900/20 to-transparent border-purple-500/20">
+                    <h3 class="text-xl font-black text-white mb-2">Welcome, ${state.user.name || state.user.login}!</h3>
+                    <p class="text-xs text-muted-purple leading-relaxed">
+                        Manage your GitHub repositories and files with OneCore. 
+                        Browse, upload, and download as ZIP directly from your mobile device.
+                    </p>
+                </div>
+                
+                <div class="flex items-center justify-between px-2">
+                    <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Your Repositories</h4>
+                    <button onclick="switchTab('repos')" class="text-[10px] font-bold text-muted-purple hover:text-white uppercase tracking-tighter">View All</button>
+                </div>
+                
+                <div id="home-repo-list" class="space-y-3">
+                    <div class="loader mx-auto my-10"></div>
+                </div>
+            </div>
+        `;
         await fetchUserRepos();
-        renderRepoList();
+        const homeRepoList = document.getElementById('home-repo-list');
+        if (homeRepoList) {
+            const recentRepos = state.repos.slice(0, 5);
+            homeRepoList.innerHTML = recentRepos.map(repo => `
+                <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:scale-95 transition-transform" onclick="selectRepo('${repo.full_name}')">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-purple-900/50 rounded-xl flex items-center justify-center text-purple-400">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-sm">${repo.name}</h3>
+                            <p class="text-[10px] text-muted-purple">${repo.private ? '<i class="fas fa-lock mr-1"></i>Private' : '<i class="fas fa-globe mr-1"></i>Public'}</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted-purple/40 text-xs"></i>
+                </div>
+            `).join('') || '<p class="text-center text-muted-purple py-10">No repositories found</p>';
+        }
     } else {
         elements.viewTitle.textContent = state.currentRepo.name;
         renderBreadcrumbs();
@@ -369,13 +427,29 @@ function renderUpload() {
 }
 
 function renderSettings() {
+    const currentClientId = localStorage.getItem('gh_client_id') || GITHUB_CLIENT_ID;
     elements.content.innerHTML = `
         <div class="space-y-6">
             <div class="glass-card p-6 rounded-2xl flex items-center gap-4">
-                <img src="${state.user.avatar_url}" class="w-16 h-16 rounded-2xl border-2 border-purple-500/30">
+                <div class="relative">
+                    <img src="${state.user.avatar_url}" class="w-16 h-16 rounded-2xl border-2 border-purple-500/30">
+                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-[#05040a]"></div>
+                </div>
                 <div>
                     <h3 class="text-lg font-bold text-white">${state.user.name || state.user.login}</h3>
                     <p class="text-xs text-muted-purple">@${state.user.login}</p>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+                <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Configuration</h4>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-muted-purple uppercase">GitHub Client ID</label>
+                    <div class="flex gap-2">
+                        <input id="settings-client-id" type="text" value="${currentClientId === 'YOUR_GITHUB_CLIENT_ID' ? '' : currentClientId}" placeholder="Enter Client ID" class="flex-1 bg-[#05040a] border border-purple-900/50 rounded-xl p-3 text-xs text-white outline-none focus:border-purple-500">
+                        <button id="btn-save-client-id" class="bg-purple-600 text-white px-4 rounded-xl text-xs font-bold">Save</button>
+                    </div>
+                    <p class="text-[9px] text-muted-purple/60">Required for authentication to work.</p>
                 </div>
             </div>
 
@@ -397,20 +471,37 @@ function renderSettings() {
             </div>
 
             <div class="glass-card p-6 rounded-2xl space-y-4">
-                <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Developer Info</h4>
-                <div class="space-y-2 text-xs text-muted-purple/80 leading-relaxed">
-                    <p><strong>How to setup:</strong></p>
-                    <ol class="list-decimal ml-4 space-y-1">
-                        <li>Go to GitHub Settings > Developer settings.</li>
-                        <li>OAuth Apps > New OAuth App.</li>
-                        <li>Set name and homepage.</li>
-                        <li>Copy <strong>Client ID</strong> to app.js.</li>
-                        <li>Enable <strong>Device Flow</strong> in app settings.</li>
-                    </ol>
+                <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Setup Guide</h4>
+                <div class="space-y-3 text-xs text-muted-purple/80 leading-relaxed">
+                    <div class="flex gap-3">
+                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+                        <p>Go to <strong>GitHub Settings</strong> > <strong>Developer settings</strong> > <strong>OAuth Apps</strong>.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
+                        <p>Click <strong>New OAuth App</strong>. Set Homepage URL to this app's URL.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
+                        <p>Copy the <strong>Client ID</strong> and paste it above.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">4</span>
+                        <p><strong>CRITICAL:</strong> Check the box <strong>"Enable Device Flow"</strong> in the app settings.</p>
+                    </div>
                 </div>
             </div>
         </div>
     `;
+
+    document.getElementById('btn-save-client-id').onclick = () => {
+        const id = document.getElementById('settings-client-id').value.trim();
+        if (id) {
+            localStorage.setItem('gh_client_id', id);
+            showToast("Client ID saved! Reloading...");
+            setTimeout(() => location.reload(), 1500);
+        }
+    };
 }
 
 // --- API Actions ---
@@ -621,5 +712,13 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
+
+// Export functions to window for onclick attributes
+window.selectRepo = selectRepo;
+window.navigatePath = navigatePath;
+window.switchTab = switchTab;
+window.downloadFile = downloadFile;
+window.downloadFolderAsZip = downloadFolderAsZip;
+window.logout = logout;
 
 init();
