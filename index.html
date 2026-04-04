@@ -1,15 +1,144 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BGMI Bypass Offset Extractor Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/capstone-wasm@latest/capstone.min.js"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OneCore GitHub Manager</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1033">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        :root {
+            --purple-dark: #05040a;
+            --purple-card: #0f0a1f;
+            --purple-accent: #9333ea;
+            --text-main: #f8fafc;
+            --text-muted: #c4b5fd;
+        }
+        body {
+            background-color: var(--purple-dark);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: var(--purple-card);
+            border: 1px solid rgba(147, 51, 234, 0.15);
+        }
+        .text-muted-purple {
+            color: var(--text-muted);
+        }
+        .nav-item.active {
+            color: var(--purple-accent);
+        }
+        .nav-item.active i {
+            transform: translateY(-2px);
+            text-shadow: 0 0 10px var(--purple-accent);
+        }
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Loader */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--purple-accent);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
 
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#05040a] flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="mb-8">
+            <div class="w-20 h-20 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
+                <i class="fab fa-github text-4xl text-white"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white">OneCore GitHub</h1>
+            <p class="text-muted-purple mt-2">Manage your files anywhere</p>
+        </div>
+
+        <div id="login-initial" class="w-full max-w-xs">
+            <button id="btn-login" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-3">
+                <i class="fas fa-sign-in-alt"></i>
+                Sign in with GitHub
+            </button>
+        </div>
+
+        <div id="login-device" class="w-full max-w-xs hidden">
+            <div class="glass-card p-6 rounded-2xl mb-6">
+                <p class="text-sm text-muted-purple mb-2">Enter this code on GitHub:</p>
+                <div id="user-code" class="text-3xl font-mono font-black text-purple-400 tracking-widest mb-4">---- ----</div>
+                <button id="btn-open-github" class="w-full bg-white text-black font-bold py-2 px-4 rounded-lg text-sm mb-2">
+                    Open GitHub
+                </button>
+                <p class="text-[10px] text-muted-purple/60">Waiting for authorization...</p>
+            </div>
+            <div class="loader mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar pb-24">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-[#05040a]/80 backdrop-blur-md border-b border-purple-900/30 p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div id="user-avatar" class="w-8 h-8 rounded-full bg-purple-900 border border-purple-500/30 overflow-hidden">
+                    <img src="" alt="" class="w-full h-full object-cover hidden">
+                </div>
+                <h2 id="view-title" class="text-lg font-bold text-white">Home</h2>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btn-refresh" class="p-2 text-muted-purple hover:text-white"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <div id="content" class="p-4 space-y-4">
+            <!-- Content will be injected here -->
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 glass-card border-t border-purple-900/30 safe-bottom z-50">
+        <div class="flex items-center justify-around p-2">
+            <button data-tab="home" class="nav-item flex flex-col items-center gap-1 p-2 transition-all active">
+                <i class="fas fa-home text-xl"></i>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Home</span>
+            </button>
+            <button data-tab="repos" class="nav-item flex flex-col items-center gap-1 p-2 transition-all">
+                <i class="fas fa-book text-xl"></i>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Repos</span>
+            </button>
+            <button data-tab="upload" class="nav-item flex flex-col items-center gap-1 p-2 transition-all">
+                <i class="fas fa-cloud-upload-alt text-xl"></i>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Upload</span>
+            </button>
+            <button data-tab="settings" class="nav-item flex flex-col items-center gap-1 p-2 transition-all">
+                <i class="fas fa-cog text-xl"></i>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Settings</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl opacity-0 transition-all pointer-events-none z-[200]">
+        Notification message
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

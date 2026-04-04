@@ -1,5 +1,5 @@
 {
-  "name": "Blank Project",
-  "description": "A blank project template.",
+  "name": "OneCore GitHub Manager",
+  "description": "A mobile-first GitHub file manager PWA with device flow authentication, bulk upload, and ZIP downloads.",
   "requestFramePermissions": []
 }
