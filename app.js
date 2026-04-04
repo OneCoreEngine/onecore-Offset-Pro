@@ -4,9 +4,6 @@
  */
 
 const GITHUB_API_BASE = "https://api.github.com";
-const GITHUB_AUTH_BASE = "https://github.com/login/oauth/authorize";
-const GITHUB_TOKEN_BASE = "https://github.com/login/oauth/access_token";
-const GITHUB_CLIENT_ID = "Ov231i4bnJffZb9RGhUK";
 
 // State Management
 const state = {
@@ -28,6 +25,7 @@ const elements = {
     loginInitial: document.getElementById('login-initial'),
     loginLoading: document.getElementById('login-loading'),
     btnLogin: document.getElementById('btn-login'),
+    patInput: document.getElementById('pat-input'),
     appContainer: document.getElementById('app-container'),
     bottomNav: document.getElementById('bottom-nav'),
     viewTitle: document.getElementById('view-title'),
@@ -38,42 +36,6 @@ const elements = {
     toast: document.getElementById('toast'),
     btnRefresh: document.getElementById('btn-refresh')
 };
-
-// --- PKCE Helpers ---
-function generateRandomString(length) {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-    let result = '';
-    const values = new Uint32Array(length);
-    crypto.getRandomValues(values);
-    for (let i = 0; i < length; i++) {
-        result += charset[values[i] % charset.length];
-    }
-    return result;
-}
-
-async function sha256(plain) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(plain);
-    return crypto.subtle.digest('SHA-256', data);
-}
-
-function base64urlencode(a) {
-    let str = "";
-    const bytes = new Uint8Array(a);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-        str += String.fromCharCode(bytes[i]);
-    }
-    return btoa(str)
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
-}
-
-async function generateCodeChallenge(v) {
-    const hashed = await sha256(v);
-    return base64urlencode(hashed);
-}
 
 // --- Initialization ---
 async function init() {
@@ -94,7 +56,7 @@ async function init() {
 
 // --- Event Listeners ---
 function setupEventListeners() {
-    elements.btnLogin.addEventListener('click', startOAuthFlow);
+    elements.btnLogin.addEventListener('click', handlePATLogin);
     
     elements.navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -112,54 +74,35 @@ function setupEventListeners() {
             renderTab(state.activeTab);
         }
     });
-
-    // Listen for message from popup
-    window.addEventListener('message', (event) => {
-        if (event.origin !== window.location.origin) return;
-        
-        if (event.data.token) {
-            handleLoginSuccess(event.data.token);
-        } else if (event.data.error) {
-            showToast(event.data.error, 'error');
-            elements.loginInitial.classList.remove('hidden');
-            elements.loginLoading.classList.add('hidden');
-        }
-    });
 }
 
-// --- Authentication (OAuth PKCE) ---
-async function startOAuthFlow() {
-    const codeVerifier = generateRandomString(64);
-    sessionStorage.setItem('gh_code_verifier', codeVerifier);
-    const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-    const redirectUri = window.location.origin + '/callback.html';
-    const scope = 'repo user';
-    
-    const authUrl = `${GITHUB_AUTH_BASE}?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&response_type=code&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+// --- Authentication (PAT) ---
+async function handlePATLogin() {
+    const token = elements.patInput.value.trim();
+    if (!token) return showToast("Please enter a token", 'error');
 
     elements.loginInitial.classList.add('hidden');
     elements.loginLoading.classList.remove('hidden');
 
-    const width = 600;
-    const height = 700;
-    const left = (window.screen.width / 2) - (width / 2);
-    const top = (window.screen.height / 2) - (height / 2);
-    
-    window.open(authUrl, 'GitHub Login', `width=${width},height=${height},top=${top},left=${left}`);
-}
-
-async function handleLoginSuccess(token) {
-    state.token = token;
-    localStorage.setItem('gh_access_token', token);
     try {
-        await fetchUserProfile();
+        const res = await fetch(`${GITHUB_API_BASE}/user`, {
+            headers: { 'Authorization': `token ${token}` }
+        });
+        
+        if (!res.ok) throw new Error("Invalid token or insufficient permissions");
+        
+        state.token = token;
+        localStorage.setItem('gh_access_token', token);
+        state.user = await res.json();
+        
+        updateHeader();
         showApp();
         renderTab('home');
         showToast("Login successful!");
     } catch (err) {
-        showToast("Failed to fetch profile", 'error');
-        logout();
+        showToast(err.message, 'error');
+        elements.loginInitial.classList.remove('hidden');
+        elements.loginLoading.classList.add('hidden');
     }
 }
 
@@ -487,7 +430,7 @@ function renderSettings() {
                         </div>
                         <span class="text-xs font-black text-white uppercase tracking-tight">Auth Mode</span>
                     </div>
-                    <span class="text-[9px] bg-[#39ff14]/10 text-[#39ff14] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-[#39ff14]/20">Pure PKCE</span>
+                    <span class="text-[9px] bg-[#39ff14]/10 text-[#39ff14] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-[#39ff14]/20">PAT Access</span>
                 </div>
                 <div class="p-5 flex items-center justify-between active:bg-red-500/5 transition-colors" onclick="logout()">
                     <div class="flex items-center gap-4 text-red-500">

@@ -79,7 +79,7 @@
 
     <!-- Auth Screen -->
     <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center">
-        <div class="mb-12">
+        <div class="mb-10">
             <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(57,255,20,0.15)]">
                 <i class="fab fa-github text-6xl text-black"></i>
             </div>
@@ -87,17 +87,28 @@
             <p class="text-[#39ff14]/40 mt-3 text-xs font-black uppercase tracking-[0.3em]">File Manager Pro</p>
         </div>
 
-        <div id="login-initial" class="w-full max-w-xs space-y-4">
+        <div id="login-initial" class="w-full max-w-xs space-y-6">
+            <div class="space-y-2 text-left">
+                <label class="text-[10px] font-black text-[#39ff14]/40 uppercase tracking-widest ml-1">Personal Access Token (Classic)</label>
+                <input id="pat-input" type="password" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl py-5 px-6 text-sm text-white outline-none focus:border-[#39ff14]/50 transition-all font-bold">
+            </div>
+            
             <button id="btn-login" class="w-full btn-primary font-black py-5 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
-                <i class="fab fa-github text-lg"></i>
-                Login with GitHub
+                <i class="fas fa-sign-in-alt"></i>
+                Login
             </button>
-            <p class="text-[10px] text-white/30 font-bold uppercase tracking-tighter">Secure PKCE Authentication</p>
+
+            <div class="glass-card p-5 rounded-2xl text-left border-[#39ff14]/10">
+                <h5 class="text-[9px] font-black text-[#39ff14] uppercase tracking-widest mb-2">How to create token:</h5>
+                <p class="text-[9px] text-white/40 font-bold leading-relaxed">
+                    GitHub Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token → Select <span class="text-[#39ff14]/60">'repo'</span> and <span class="text-[#39ff14]/60">'user'</span> scopes → Copy token.
+                </p>
+            </div>
         </div>
 
         <div id="login-loading" class="w-full max-w-xs hidden">
             <div class="loader mx-auto mb-4"></div>
-            <p class="text-[10px] text-[#39ff14]/60 font-black uppercase tracking-widest">Authenticating via popup...</p>
+            <p class="text-[10px] text-[#39ff14]/60 font-black uppercase tracking-widest">Validating Token...</p>
         </div>
     </div>
 

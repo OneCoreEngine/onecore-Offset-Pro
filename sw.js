@@ -3,7 +3,6 @@ const ASSETS = [
   '/',
   '/index.html',
   '/app.js',
-  '/callback.html',
   '/manifest.json',
   'https://cdn.tailwindcss.com',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',

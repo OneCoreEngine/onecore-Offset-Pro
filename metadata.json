@@ -1,5 +1,5 @@
 {
   "name": "OneCore GitHub File Manager",
-  "description": "A production-ready mobile-first PWA for managing GitHub files with a sleek neon green theme and pure client-side PKCE authentication.",
+  "description": "A production-ready mobile-first PWA for managing GitHub files with a sleek neon green theme and Personal Access Token (PAT) authentication.",
   "requestFramePermissions": []
 }
