@@ -17,15 +17,26 @@
             --accent: #39ff14;
             --accent-glow: rgba(57, 255, 20, 0.3);
         }
+        
+        [data-theme="cyber-blue"] {
+            --accent: #00d4ff;
+            --accent-glow: rgba(0, 212, 255, 0.3);
+        }
+
         body {
             background-color: var(--bg-deep);
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease;
         }
         .glass-card {
             background: var(--bg-card);
-            border: 1px solid rgba(57, 255, 20, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: border-color 0.3s ease;
+        }
+        .glass-card.accent-border {
+            border-color: rgba(var(--accent-rgb, 57, 255, 20), 0.15);
         }
         .nav-item {
             color: #666666;
@@ -34,7 +45,7 @@
             color: var(--accent);
         }
         .nav-item.active i {
-            text-shadow: 0 0 15px var(--accent);
+            text-shadow: 0 0 15px var(--accent-glow);
         }
         .safe-bottom {
             padding-bottom: env(safe-area-inset-bottom);
@@ -43,7 +54,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         .loader {
-            border: 3px solid rgba(57, 255, 20, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-top: 3px solid var(--accent);
             border-radius: 50%;
             width: 24px;
@@ -66,31 +77,48 @@
             color: var(--accent);
         }
         .btn-outline:active {
-            background-color: rgba(57, 255, 20, 0.05);
+            background-color: rgba(var(--accent-rgb, 57, 255, 20), 0.05);
         }
         
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             box-shadow: 0 0 0 2px var(--accent-glow);
             border-color: var(--accent) !important;
         }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+        }
+
+        .accent-text { color: var(--accent); }
+        .accent-bg { background-color: var(--accent); }
+        .accent-border { border-color: var(--accent); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col" data-theme="neon-green">
+
+    <!-- Global Loading Overlay -->
+    <div id="global-loader" class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden">
+        <div class="flex flex-col items-center gap-4">
+            <div class="loader w-12 h-12 border-4"></div>
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] accent-text">Processing...</p>
+        </div>
+    </div>
 
     <!-- Auth Screen -->
     <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center">
         <div class="mb-10">
-            <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(57,255,20,0.15)]">
+            <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
                 <i class="fab fa-github text-6xl text-black"></i>
             </div>
-            <h1 class="text-4xl font-black text-white uppercase tracking-tighter">OneCore <span class="text-[#39ff14]">GitHub</span></h1>
-            <p class="text-[#39ff14]/40 mt-3 text-xs font-black uppercase tracking-[0.3em]">File Manager Pro</p>
+            <h1 class="text-4xl font-black text-white uppercase tracking-tighter">OneCore <span class="accent-text">GitHub</span></h1>
+            <p class="text-white/20 mt-3 text-xs font-black uppercase tracking-[0.3em]">File Manager Pro</p>
         </div>
 
         <div id="login-initial" class="w-full max-w-xs space-y-6">
             <div class="space-y-2 text-left">
-                <label class="text-[10px] font-black text-[#39ff14]/40 uppercase tracking-widest ml-1">Personal Access Token (Classic)</label>
-                <input id="pat-input" type="password" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl py-5 px-6 text-sm text-white outline-none focus:border-[#39ff14]/50 transition-all font-bold">
+                <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Personal Access Token (Classic)</label>
+                <input id="pat-input" type="password" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm text-white outline-none focus:border-accent transition-all font-bold">
             </div>
             
             <button id="btn-login" class="w-full btn-primary font-black py-5 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
@@ -98,46 +126,95 @@
                 Login
             </button>
 
-            <div class="glass-card p-5 rounded-2xl text-left border-[#39ff14]/10 space-y-3">
-                <h5 class="text-[10px] font-black text-[#39ff14] uppercase tracking-widest">🔐 How to get your Token (2 min):</h5>
+            <div class="glass-card p-5 rounded-2xl text-left border-white/5 space-y-3">
+                <h5 class="text-[10px] font-black accent-text uppercase tracking-widest">🔐 How to get your Token (2 min):</h5>
                 <div class="text-[9px] text-white/60 font-bold leading-relaxed space-y-2">
-                    <p>1️⃣ Open <span class="text-[#39ff14]">GitHub.com</span> → Tap profile picture → <span class="text-white">Settings</span></p>
+                    <p>1️⃣ Open <span class="accent-text">GitHub.com</span> → Tap profile picture → <span class="text-white">Settings</span></p>
                     <p>2️⃣ Scroll down → <span class="text-white">Developer settings</span> → <span class="text-white">Personal access tokens</span> → <span class="text-white">Tokens (classic)</span></p>
-                    <p>3️⃣ Click <span class="text-[#39ff14]">"Generate new token (classic)"</span></p>
+                    <p>3️⃣ Click <span class="accent-text">"Generate new token (classic)"</span></p>
                     <p>4️⃣ Give any name, e.g., "My File Manager"</p>
                     <p>5️⃣ Under Scopes, tick these:
                         <br>✅ <span class="text-white">repo</span> (all options)
                         <br>✅ <span class="text-white">user</span> (read user info)
                     </p>
-                    <p>6️⃣ Scroll down → <span class="text-[#39ff14]">Generate token</span></p>
-                    <p>7️⃣ Copy the token (starts with <span class="text-[#39ff14]">ghp_...</span>)</p>
-                    <p>8️⃣ Paste it above and tap <span class="text-[#39ff14]">LOGIN</span></p>
+                    <p>6️⃣ Scroll down → <span class="accent-text">Generate token</span></p>
+                    <p>7️⃣ Copy the token (starts with <span class="accent-text">ghp_...</span>)</p>
+                    <p>8️⃣ Paste it above and tap <span class="accent-text">LOGIN</span></p>
                 </div>
-                <p class="text-[8px] text-[#39ff14]/40 font-black uppercase tracking-tighter mt-2 italic">⚠️ Token is like a password. Keep it secret. You can revoke it anytime.</p>
+                <p class="text-[8px] text-white/20 font-black uppercase tracking-tighter mt-2 italic">⚠️ Token is like a password. Keep it secret. You can revoke it anytime.</p>
             </div>
         </div>
 
         <div id="login-loading" class="w-full max-w-xs hidden">
             <div class="loader mx-auto mb-4"></div>
-            <p class="text-[10px] text-[#39ff14]/60 font-black uppercase tracking-widest">Validating Token...</p>
+            <p class="text-[10px] accent-text font-black uppercase tracking-widest">Validating Token...</p>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 z-[250] modal-overlay flex items-center justify-center p-4 hidden">
+        <div class="glass-card w-full max-w-2xl rounded-[2rem] flex flex-col max-h-[90vh] overflow-hidden">
+            <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                <h3 id="edit-filename" class="text-sm font-black text-white uppercase tracking-tight truncate pr-4">Edit File</h3>
+                <button onclick="closeModal('edit-modal')" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4">
+                <textarea id="edit-content" class="w-full h-full min-h-[300px] bg-black/50 border border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-accent resize-none"></textarea>
+            </div>
+            <div class="p-6 border-t border-white/5 flex gap-3">
+                <button onclick="closeModal('edit-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10">Cancel</button>
+                <button id="btn-save-file" class="flex-1 btn-primary py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[250] modal-overlay flex items-center justify-center p-6 hidden">
+        <div class="glass-card w-full max-w-xs rounded-[2rem] p-8 text-center space-y-6">
+            <div class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto text-red-500">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            <div>
+                <h3 id="confirm-title" class="text-lg font-black text-white uppercase tracking-tight">Are you sure?</h3>
+                <p id="confirm-message" class="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-2 leading-relaxed">This action cannot be undone.</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeModal('confirm-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10">Cancel</button>
+                <button id="btn-confirm-action" class="flex-1 bg-red-500 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.2)]">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Modal -->
+    <div id="prompt-modal" class="fixed inset-0 z-[250] modal-overlay flex items-center justify-center p-6 hidden">
+        <div class="glass-card w-full max-w-xs rounded-[2rem] p-8 space-y-6">
+            <div>
+                <h3 id="prompt-title" class="text-lg font-black text-white uppercase tracking-tight">Rename</h3>
+                <p id="prompt-message" class="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Enter new name</p>
+            </div>
+            <input id="prompt-input" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:border-accent font-bold">
+            <div class="flex gap-3">
+                <button onclick="closeModal('prompt-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10">Cancel</button>
+                <button id="btn-prompt-action" class="flex-1 btn-primary py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Confirm</button>
+            </div>
         </div>
     </div>
 
     <!-- Main App Container -->
     <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar pb-24 hidden">
         <!-- Header -->
-        <header class="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-[#39ff14]/10 p-4 flex items-center justify-between">
+        <header class="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div id="user-avatar" class="w-10 h-10 rounded-xl bg-[#39ff14]/5 border border-[#39ff14]/20 overflow-hidden">
+                <div id="user-avatar" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 overflow-hidden">
                     <img src="" alt="" class="w-full h-full object-cover hidden">
                 </div>
                 <div>
                     <h2 id="view-title" class="text-lg font-black text-white uppercase tracking-tight leading-none">Home</h2>
-                    <p id="view-subtitle" class="text-[9px] text-[#39ff14]/40 font-black uppercase tracking-widest mt-1">File Explorer</p>
+                    <p id="view-subtitle" class="text-[9px] accent-text font-black uppercase tracking-widest mt-1">File Explorer</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="btn-refresh" class="w-10 h-10 flex items-center justify-center text-[#39ff14]/40 hover:text-[#39ff14] transition-colors"><i class="fas fa-sync-alt"></i></button>
+                <button id="btn-refresh" class="w-10 h-10 flex items-center justify-center text-white/40 hover:accent-text transition-colors"><i class="fas fa-sync-alt"></i></button>
             </div>
         </header>
 
@@ -148,7 +225,7 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 glass-card border-t border-[#39ff14]/10 safe-bottom z-50 hidden">
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 glass-card border-t border-white/5 safe-bottom z-50 hidden">
         <div class="flex items-center justify-around p-2">
             <button data-tab="home" class="nav-item flex flex-col items-center gap-1 p-2 transition-all active">
                 <i class="fas fa-home text-xl"></i>
@@ -170,7 +247,7 @@
     </nav>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 bg-[#39ff14] text-black px-6 py-3 rounded-full text-xs font-black shadow-[0_0_30px_rgba(57,255,20,0.4)] opacity-0 transition-all pointer-events-none z-[200] uppercase tracking-widest">
+    <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 accent-bg text-black px-6 py-3 rounded-full text-[10px] font-black shadow-2xl opacity-0 transition-all pointer-events-none z-[200] uppercase tracking-widest">
         Notification message
     </div>
 
