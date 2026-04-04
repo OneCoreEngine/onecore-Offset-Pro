@@ -691,17 +691,24 @@ async function editFile(path, name) {
         const res = await fetch(`${GITHUB_API_BASE}/repos/${state.currentRepo.full_name}/contents/${path}`, {
             headers: { 'Authorization': `token ${state.token}` }
         });
+        if (!res.ok) throw new Error("Failed to fetch file content");
         const data = await res.json();
         
         // Check if it's a text file
         if (data.encoding !== 'base64') {
-            throw new Error("This file type cannot be edited in the browser.");
+            throw new Error("Cannot edit binary files");
         }
 
-        const content = atob(data.content);
-        // Simple check for binary content
-        if (/[\x00-\x08\x0E-\x1F]/.test(content)) {
-            throw new Error("Binary files cannot be edited.");
+        let content;
+        try {
+            content = b64ToUtf8(data.content);
+        } catch (e) {
+            throw new Error("Cannot edit binary files");
+        }
+
+        // Simple check for binary content (null bytes etc)
+        if (/[\x00-\x08\x0E-\x1F]/.test(content) && !/[\t\n\r]/.test(content)) {
+            throw new Error("Cannot edit binary files");
         }
 
         elements.editFilename.textContent = `Editing: ${name}`;
@@ -728,15 +735,18 @@ async function saveFile(path, sha) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                message: `Update ${path} via OneCore`,
-                content: btoa(content),
+                message: `Updated ${path} via OneCore`,
+                content: utf8ToB64(content),
                 sha: sha
             })
         });
         
-        if (!res.ok) throw new Error("Failed to save file");
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || "Failed to save file");
+        }
         
-        showToast("File saved successfully!");
+        showToast("File saved successfully!", 'success');
         closeModal('edit-modal');
         fetchRepoContents(state.currentRepo, state.currentPath);
     } catch (err) {
@@ -744,6 +754,18 @@ async function saveFile(path, sha) {
     } finally {
         showGlobalLoader(false);
     }
+}
+
+function b64ToUtf8(str) {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+}
+
+function utf8ToB64(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
 }
 
 async function confirmDelete(path, name, isDir) {
@@ -1321,5 +1343,8 @@ window.openItemActionSheet = openItemActionSheet;
 window.closeActionSheet = closeActionSheet;
 window.editorAction = editorAction;
 window.copyToClipboard = copyToClipboard;
+window.editFile = editFile;
+window.createRepository = createRepository;
+window.downloadRepoZip = downloadRepoZip;
 
 init();
