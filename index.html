@@ -29,14 +29,12 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
             transition: background-color 0.3s ease;
+            overflow-x: hidden;
         }
         .glass-card {
             background: var(--bg-card);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: border-color 0.3s ease;
-        }
-        .glass-card.accent-border {
-            border-color: rgba(var(--accent-rgb, 57, 255, 20), 0.15);
         }
         .nav-item {
             color: #666666;
@@ -70,14 +68,6 @@
         }
         .btn-primary:active {
             transform: scale(0.95);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
-        .btn-outline {
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
-        .btn-outline:active {
-            background-color: rgba(var(--accent-rgb, 57, 255, 20), 0.05);
         }
         
         input:focus, select:focus, textarea:focus {
@@ -93,6 +83,18 @@
         .accent-text { color: var(--accent); }
         .accent-bg { background-color: var(--accent); }
         .accent-border { border-color: var(--accent); }
+
+        /* Bottom Sheet Animation */
+        #action-sheet {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #action-sheet.open {
+            transform: translateY(0);
+        }
+        .sheet-item {
+            min-height: 56px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col" data-theme="neon-green">
@@ -101,7 +103,7 @@
     <div id="global-loader" class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden">
         <div class="flex flex-col items-center gap-4">
             <div class="loader w-12 h-12 border-4"></div>
-            <p class="text-[10px] font-black uppercase tracking-[0.3em] accent-text">Processing...</p>
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] accent-text">Processing</p>
         </div>
     </div>
 
@@ -122,32 +124,27 @@
             </div>
             
             <button id="btn-login" class="w-full btn-primary font-black py-5 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
-                <i class="fas fa-sign-in-alt"></i>
                 Login
             </button>
 
             <div class="glass-card p-5 rounded-2xl text-left border-white/5 space-y-3">
-                <h5 class="text-[10px] font-black accent-text uppercase tracking-widest">🔐 How to get your Token (2 min):</h5>
+                <h5 class="text-[10px] font-black accent-text uppercase tracking-widest">How to get your GitHub token:</h5>
                 <div class="text-[9px] text-white/60 font-bold leading-relaxed space-y-2">
-                    <p>1️⃣ Open <span class="accent-text">GitHub.com</span> → Tap profile picture → <span class="text-white">Settings</span></p>
-                    <p>2️⃣ Scroll down → <span class="text-white">Developer settings</span> → <span class="text-white">Personal access tokens</span> → <span class="text-white">Tokens (classic)</span></p>
-                    <p>3️⃣ Click <span class="accent-text">"Generate new token (classic)"</span></p>
-                    <p>4️⃣ Give any name, e.g., "My File Manager"</p>
-                    <p>5️⃣ Under Scopes, tick these:
-                        <br>✅ <span class="text-white">repo</span> (all options)
-                        <br>✅ <span class="text-white">user</span> (read user info)
-                    </p>
-                    <p>6️⃣ Scroll down → <span class="accent-text">Generate token</span></p>
-                    <p>7️⃣ Copy the token (starts with <span class="accent-text">ghp_...</span>)</p>
-                    <p>8️⃣ Paste it above and tap <span class="accent-text">LOGIN</span></p>
+                    <p>1. Open GitHub.com and go to Settings.</p>
+                    <p>2. Select Developer settings > Personal access tokens > Tokens (classic).</p>
+                    <p>3. Click Generate new token (classic).</p>
+                    <p>4. Enter a name (e.g., OneCore Manager).</p>
+                    <p>5. Under Scopes, select 'repo' (all) and 'user'.</p>
+                    <p>6. Click Generate token and copy the value (starts with ghp_).</p>
+                    <p>7. Paste the token below and tap Login.</p>
                 </div>
-                <p class="text-[8px] text-white/20 font-black uppercase tracking-tighter mt-2 italic">⚠️ Token is like a password. Keep it secret. You can revoke it anytime.</p>
+                <p class="text-[8px] text-white/20 font-black uppercase tracking-tighter mt-2 italic">Token is like a password. Keep it secret. You can revoke it anytime.</p>
             </div>
         </div>
 
         <div id="login-loading" class="w-full max-w-xs hidden">
             <div class="loader mx-auto mb-4"></div>
-            <p class="text-[10px] accent-text font-black uppercase tracking-widest">Validating Token...</p>
+            <p class="text-[10px] accent-text font-black uppercase tracking-widest">Validating Token</p>
         </div>
     </div>
 
@@ -156,14 +153,34 @@
         <div class="glass-card w-full max-w-2xl rounded-[2rem] flex flex-col max-h-[90vh] overflow-hidden">
             <div class="p-6 border-b border-white/5 flex items-center justify-between">
                 <h3 id="edit-filename" class="text-sm font-black text-white uppercase tracking-tight truncate pr-4">Edit File</h3>
-                <button onclick="closeModal('edit-modal')" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal('edit-modal')" class="text-white/40 hover:text-white p-2"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="bg-black/20 p-2 flex gap-2 border-b border-white/5 overflow-x-auto no-scrollbar">
+                <button onclick="editorAction('cut')" class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white/60 hover:accent-text">Cut</button>
+                <button onclick="editorAction('copy')" class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white/60 hover:accent-text">Copy</button>
+                <button onclick="editorAction('paste')" class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white/60 hover:accent-text">Paste</button>
             </div>
             <div class="flex-1 overflow-y-auto p-4">
                 <textarea id="edit-content" class="w-full h-full min-h-[300px] bg-black/50 border border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-accent resize-none"></textarea>
             </div>
             <div class="p-6 border-t border-white/5 flex gap-3">
                 <button onclick="closeModal('edit-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10">Cancel</button>
-                <button id="btn-save-file" class="flex-1 btn-primary py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Save Changes</button>
+                <button id="btn-save-file" class="flex-1 btn-primary py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Action Sheet -->
+    <div id="action-sheet-overlay" class="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm hidden" onclick="closeActionSheet()"></div>
+    <div id="action-sheet" class="fixed bottom-0 left-0 right-0 z-[210] bg-[#111111] rounded-t-[2.5rem] border-t border-white/10 safe-bottom overflow-hidden">
+        <div class="w-12 h-1.5 bg-white/10 rounded-full mx-auto my-4"></div>
+        <div class="px-6 pb-8">
+            <div id="sheet-header" class="mb-6">
+                <h3 id="sheet-title" class="text-lg font-black text-white uppercase tracking-tight truncate">Item Name</h3>
+                <p id="sheet-subtitle" class="text-[10px] accent-text font-black uppercase tracking-widest mt-1">File</p>
+            </div>
+            <div id="sheet-actions" class="grid grid-cols-1 gap-1">
+                <!-- Actions will be injected here -->
             </div>
         </div>
     </div>

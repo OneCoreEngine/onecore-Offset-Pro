@@ -37,6 +37,13 @@ const elements = {
     btnRefresh: document.getElementById('btn-refresh'),
     globalLoader: document.getElementById('global-loader'),
     
+    // Action Sheet
+    actionSheet: document.getElementById('action-sheet'),
+    actionSheetOverlay: document.getElementById('action-sheet-overlay'),
+    sheetTitle: document.getElementById('sheet-title'),
+    sheetSubtitle: document.getElementById('sheet-subtitle'),
+    sheetActions: document.getElementById('sheet-actions'),
+    
     // Modals
     editModal: document.getElementById('edit-modal'),
     editFilename: document.getElementById('edit-filename'),
@@ -128,10 +135,7 @@ async function handlePATLogin() {
         updateHeader();
         showApp();
         renderTab('home');
-        showToast("Login successful!");
-        
-        // Auto-hide success message after 2s (handled by showToast usually, 
-        // but let's ensure the UI transition is smooth)
+        showToast("Login successful", 'success', 2000);
     } catch (err) {
         showToast(err.message, 'error');
         elements.loginInitial.classList.remove('hidden');
@@ -236,17 +240,17 @@ async function renderHome() {
         if (homeRepoList) {
             const recentRepos = state.repos.slice(0, 5);
             homeRepoList.innerHTML = recentRepos.map(repo => `
-                <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="selectRepo('${repo.full_name}')">
+                <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="openRepoActionSheet('${repo.full_name}', '${repo.name}')">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 accent-bg opacity-10 rounded-2xl flex items-center justify-center accent-text">
                             <i class="fas fa-book text-lg"></i>
                         </div>
                         <div>
                             <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                            <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 accent-text opacity-60"></i>Private' : '<i class="fas fa-globe mr-1 accent-text opacity-60"></i>Public'}</p>
+                            <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? 'Private' : 'Public'}</p>
                         </div>
                     </div>
-                    <i class="fas fa-chevron-right text-white/10 text-xs"></i>
+                    <i class="fas fa-ellipsis-v text-white/10 text-xs"></i>
                 </div>
             `).join('') || '<p class="text-center text-white/40 py-10 font-black uppercase tracking-widest text-[10px]">No repositories found</p>';
         }
@@ -272,22 +276,17 @@ function renderRepoList() {
             </div>
             <div id="repo-list-container" class="space-y-3">
                 ${state.repos.map(repo => `
-                    <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="selectRepo('${repo.full_name}')">
+                    <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="openRepoActionSheet('${repo.full_name}', '${repo.name}')">
                         <div class="flex items-center gap-4 flex-1 min-w-0">
                             <div class="w-12 h-12 accent-bg opacity-10 rounded-2xl flex items-center justify-center accent-text">
                                 <i class="fas fa-book text-lg"></i>
                             </div>
                             <div class="min-w-0">
                                 <h3 class="font-black text-white text-sm tracking-tight truncate">${repo.name}</h3>
-                                <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 accent-text opacity-60"></i>Private' : '<i class="fas fa-globe mr-1 accent-text opacity-60"></i>Public'}</p>
+                                <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? 'Private' : 'Public'}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="event.stopPropagation(); confirmDeleteRepo('${repo.full_name}')" class="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center active:scale-90 transition-all">
-                                <i class="fas fa-trash-alt text-xs"></i>
-                            </button>
-                            <i class="fas fa-chevron-right text-white/10 text-xs"></i>
-                        </div>
+                        <i class="fas fa-ellipsis-v text-white/10 text-xs"></i>
                     </div>
                 `).join('')}
             </div>
@@ -344,8 +343,8 @@ function renderContentsList() {
         const isDir = item.type === 'dir';
         const icon = isDir ? 'fa-folder accent-text' : getFileIcon(item.name);
         return `
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between group border-white/5 active:scale-[0.98] transition-all">
-                <div class="flex items-center gap-4 flex-1 min-w-0" onclick="${isDir ? `navigatePath('${item.path}')` : `handleFileClick('${item.path}', '${item.name}', '${item.download_url}')`}">
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between group border-white/5 active:scale-[0.98] transition-all" onclick="openItemActionSheet('${item.path}', '${item.name}', '${item.type}', '${item.download_url}')">
+                <div class="flex items-center gap-4 flex-1 min-w-0">
                     <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center ${isDir ? 'accent-text' : 'text-white/40'}">
                         <i class="fas ${icon} text-lg"></i>
                     </div>
@@ -354,23 +353,7 @@ function renderContentsList() {
                         <p class="text-[9px] text-white/40 font-black uppercase tracking-widest mt-0.5">${isDir ? 'Folder' : formatSize(item.size)}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="confirmRename('${item.path}', '${item.name}', ${isDir})" class="p-2 text-white/20 hover:accent-text transition-colors">
-                        <i class="fas fa-edit text-xs"></i>
-                    </button>
-                    <button onclick="confirmDelete('${item.path}', '${item.name}', ${isDir})" class="p-2 text-white/20 hover:text-red-500 transition-colors">
-                        <i class="fas fa-trash-alt text-xs"></i>
-                    </button>
-                    ${isDir ? `
-                        <button onclick="downloadFolderAsZip('${item.path}', '${item.name}')" class="p-2 text-white/20 hover:accent-text transition-colors">
-                            <i class="fas fa-file-archive text-xs"></i>
-                        </button>
-                    ` : `
-                        <button onclick="downloadFile('${item.download_url}', '${item.name}')" class="p-2 text-white/20 hover:accent-text transition-colors">
-                            <i class="fas fa-download text-xs"></i>
-                        </button>
-                    `}
-                </div>
+                <i class="fas fa-ellipsis-v text-white/10 text-xs"></i>
             </div>
         `;
     }).join('') || '<p class="text-center text-white/40 py-10 font-black uppercase tracking-widest text-[10px]">This folder is empty</p>';
@@ -485,14 +468,10 @@ function renderSettings() {
 
             <div class="space-y-3">
                 <h4 class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-2">Theme Switcher</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="setTheme('neon-green')" class="glass-card p-6 rounded-3xl flex flex-col items-center gap-3 transition-all ${state.theme === 'neon-green' ? 'accent-border' : 'border-white/5'}">
-                        <div class="w-8 h-8 bg-[#39ff14] rounded-full shadow-[0_0_15px_rgba(57,255,20,0.4)]"></div>
-                        <span class="text-[9px] font-black uppercase tracking-widest ${state.theme === 'neon-green' ? 'accent-text' : 'text-white/40'}">Neon Green</span>
-                    </button>
-                    <button onclick="setTheme('cyber-blue')" class="glass-card p-6 rounded-3xl flex flex-col items-center gap-3 transition-all ${state.theme === 'cyber-blue' ? 'accent-border' : 'border-white/5'}">
-                        <div class="w-8 h-8 bg-[#00d4ff] rounded-full shadow-[0_0_15px_rgba(0,212,255,0.4)]"></div>
-                        <span class="text-[9px] font-black uppercase tracking-widest ${state.theme === 'cyber-blue' ? 'accent-text' : 'text-white/40'}">Cyber Blue</span>
+                <div class="glass-card p-4 rounded-3xl flex items-center justify-between border-white/5">
+                    <span class="text-xs font-black text-white uppercase tracking-tight">Cyber Blue Theme</span>
+                    <button onclick="toggleTheme()" class="w-14 h-8 bg-white/5 rounded-full relative p-1 transition-all">
+                        <div class="w-6 h-6 rounded-full transition-all ${state.theme === 'cyber-blue' ? 'translate-x-6 accent-bg' : 'bg-white/20'}"></div>
                     </button>
                 </div>
             </div>
@@ -541,12 +520,14 @@ async function selectRepo(fullName) {
     state.currentRepo = state.repos.find(r => r.full_name === fullName);
     state.currentPath = '';
     state.breadcrumbs = [];
+    closeActionSheet();
     await fetchRepoContents(state.currentRepo, '');
     renderTab('home');
 }
 
 async function navigatePath(path) {
     state.currentPath = path;
+    closeActionSheet();
     await fetchRepoContents(state.currentRepo, path);
     renderTab('home');
 }
@@ -578,6 +559,7 @@ async function handleFileClick(path, name, downloadUrl) {
 }
 
 async function editFile(path, name) {
+    closeActionSheet();
     showGlobalLoader(true);
     try {
         const res = await fetch(`${GITHUB_API_BASE}/repos/${state.currentRepo.full_name}/contents/${path}`, {
@@ -629,6 +611,7 @@ async function saveFile(path, sha) {
 }
 
 async function confirmDelete(path, name, isDir) {
+    closeActionSheet();
     elements.confirmTitle.textContent = `Delete ${isDir ? 'Folder' : 'File'}?`;
     elements.confirmMessage.textContent = `Are you sure you want to delete "${name}"? ${isDir ? 'This will delete all contents recursively.' : ''}`;
     
@@ -723,6 +706,7 @@ async function recursiveDelete(path) {
 }
 
 async function confirmRename(path, name, isDir) {
+    closeActionSheet();
     elements.promptTitle.textContent = `Rename ${isDir ? 'Folder' : 'File'}`;
     elements.promptMessage.textContent = `Enter new name for "${name}"`;
     elements.promptInput.value = name;
@@ -811,6 +795,7 @@ async function recursiveCopy(oldPath, newPath) {
 }
 
 async function promptNewFile() {
+    closeActionSheet();
     elements.promptTitle.textContent = "New File";
     elements.promptMessage.textContent = "Enter filename (e.g. index.html)";
     elements.promptInput.value = "";
@@ -854,6 +839,7 @@ async function createFile(path) {
 }
 
 async function promptNewFolder() {
+    closeActionSheet();
     elements.promptTitle.textContent = "New Folder";
     elements.promptMessage.textContent = "Enter folder name";
     elements.promptInput.value = "";
@@ -871,6 +857,7 @@ async function promptNewFolder() {
 }
 
 async function confirmDeleteRepo(fullName) {
+    closeActionSheet();
     elements.confirmTitle.textContent = "Delete Repository?";
     elements.confirmMessage.textContent = `Are you sure you want to delete "${fullName}"? This action is irreversible.`;
     
@@ -900,6 +887,7 @@ async function confirmDeleteRepo(fullName) {
 
 // --- File Operations (Existing) ---
 function downloadFile(url, name) {
+    closeActionSheet();
     const a = document.createElement('a');
     a.href = url;
     a.download = name;
@@ -910,6 +898,7 @@ function downloadFile(url, name) {
 }
 
 async function downloadFolderAsZip(path, folderName) {
+    closeActionSheet();
     showToast(`Preparing ZIP for ${folderName}...`);
     const zip = new JSZip();
     const repo = state.currentRepo;
@@ -1014,7 +1003,105 @@ function readFileAsBase64(file) {
     });
 }
 
-// --- Helpers ---
+function toggleTheme() {
+    const newTheme = state.theme === 'neon-green' ? 'cyber-blue' : 'neon-green';
+    setTheme(newTheme);
+    renderTab('settings');
+}
+
+// --- Action Sheet Logic ---
+function openActionSheet(title, subtitle, actions) {
+    elements.sheetTitle.textContent = title;
+    elements.sheetSubtitle.textContent = subtitle;
+    elements.sheetActions.innerHTML = actions.map(action => `
+        <button onclick="${action.handler}" class="sheet-item w-full flex items-center gap-4 px-4 rounded-2xl hover:bg-white/5 transition-all active:scale-[0.98]">
+            <div class="w-10 h-10 flex items-center justify-center text-white/40">
+                <i class="fas ${action.icon} text-sm"></i>
+            </div>
+            <span class="text-xs font-black text-white uppercase tracking-tight">${action.label}</span>
+        </button>
+    `).join('');
+    
+    elements.actionSheetOverlay.classList.remove('hidden');
+    setTimeout(() => elements.actionSheet.classList.add('open'), 10);
+}
+
+function closeActionSheet() {
+    elements.actionSheet.classList.remove('open');
+    setTimeout(() => elements.actionSheetOverlay.classList.add('hidden'), 300);
+}
+
+function openRepoActionSheet(fullName, name) {
+    const actions = [
+        { label: 'Open Repository', icon: 'fa-external-link-alt', handler: `selectRepo('${fullName}')` },
+        { label: 'Delete Repository', icon: 'fa-trash-alt text-red-500', handler: `confirmDeleteRepo('${fullName}')` }
+    ];
+    openActionSheet(name, 'Repository', actions);
+}
+
+function openItemActionSheet(path, name, type, downloadUrl) {
+    const isDir = type === 'dir';
+    let actions = [];
+    
+    if (isDir) {
+        actions = [
+            { label: 'Open Folder', icon: 'fa-folder-open', handler: `navigatePath('${path}')` },
+            { label: 'New File', icon: 'fa-plus', handler: `promptNewFile()` },
+            { label: 'New Folder', icon: 'fa-folder-plus', handler: `promptNewFolder()` },
+            { label: 'Rename', icon: 'fa-edit', handler: `confirmRename('${path}', '${name}', true)` },
+            { label: 'Download ZIP', icon: 'fa-file-archive', handler: `downloadFolderAsZip('${path}', '${name}')` },
+            { label: 'Delete', icon: 'fa-trash-alt text-red-500', handler: `confirmDelete('${path}', '${name}', true)` }
+        ];
+    } else {
+        actions = [
+            { label: 'Edit File', icon: 'fa-edit', handler: `editFile('${path}', '${name}')` },
+            { label: 'Rename', icon: 'fa-signature', handler: `confirmRename('${path}', '${name}', false)` },
+            { label: 'Download', icon: 'fa-download', handler: `downloadFile('${downloadUrl}', '${name}')` },
+            { label: 'Copy Path', icon: 'fa-copy', handler: `copyToClipboard('${path}')` },
+            { label: 'Delete', icon: 'fa-trash-alt text-red-500', handler: `confirmDelete('${path}', '${name}', false)` }
+        ];
+    }
+    
+    openActionSheet(name, isDir ? 'Folder' : 'File', actions);
+}
+
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast("Path copied to clipboard");
+    } catch (err) {
+        showToast("Failed to copy", "error");
+    }
+    closeActionSheet();
+}
+
+async function editorAction(action) {
+    const textarea = elements.editContent;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+
+    try {
+        if (action === 'copy') {
+            if (selectedText) {
+                await navigator.clipboard.writeText(selectedText);
+                showToast("Copied to clipboard");
+            }
+        } else if (action === 'cut') {
+            if (selectedText) {
+                await navigator.clipboard.writeText(selectedText);
+                textarea.value = textarea.value.substring(0, start) + textarea.value.substring(end);
+                showToast("Cut to clipboard");
+            }
+        } else if (action === 'paste') {
+            const text = await navigator.clipboard.readText();
+            textarea.value = textarea.value.substring(0, start) + text + textarea.value.substring(end);
+            showToast("Pasted from clipboard");
+        }
+    } catch (err) {
+        showToast("Clipboard access denied", "error");
+    }
+}
 function getFileIcon(name) {
     const ext = name.split('.').pop().toLowerCase();
     const icons = {
@@ -1047,13 +1134,13 @@ function formatSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', duration = 3000) {
     elements.toast.textContent = message;
     elements.toast.className = `fixed bottom-28 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-[10px] font-black shadow-2xl transition-all pointer-events-none z-[200] uppercase tracking-widest ${type === 'error' ? 'bg-red-600 text-white' : 'accent-bg text-black'}`;
     elements.toast.classList.add('opacity-100', 'bottom-32');
     setTimeout(() => {
         elements.toast.classList.remove('opacity-100', 'bottom-32');
-    }, 2000);
+    }, duration);
 }
 
 function showGlobalLoader(show) {
@@ -1094,5 +1181,11 @@ window.confirmRename = confirmRename;
 window.promptNewFile = promptNewFile;
 window.promptNewFolder = promptNewFolder;
 window.confirmDeleteRepo = confirmDeleteRepo;
+window.openRepoActionSheet = openRepoActionSheet;
+window.openItemActionSheet = openItemActionSheet;
+window.closeActionSheet = closeActionSheet;
+window.toggleTheme = toggleTheme;
+window.editorAction = editorAction;
+window.copyToClipboard = copyToClipboard;
 
 init();
