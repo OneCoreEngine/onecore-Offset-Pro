@@ -15,8 +15,7 @@ const state = {
     contents: [],
     breadcrumbs: [],
     uploadQueue: [],
-    isUploading: false,
-    theme: localStorage.getItem('gh_theme') || 'neon-green'
+    isUploading: false
 };
 
 // DOM Elements
@@ -64,7 +63,6 @@ const elements = {
 
 // --- Initialization ---
 async function init() {
-    setTheme(state.theme);
     if (!state.token) {
         showAuthScreen();
     } else {
@@ -100,17 +98,6 @@ function setupEventListeners() {
             renderTab(state.activeTab);
         }
     });
-}
-
-// --- Theme Management ---
-function setTheme(theme) {
-    state.theme = theme;
-    localStorage.setItem('gh_theme', theme);
-    document.body.setAttribute('data-theme', theme);
-    
-    // Update RGB variable for borders/glows
-    const rgb = theme === 'neon-green' ? '57, 255, 20' : '0, 212, 255';
-    document.documentElement.style.setProperty('--accent-rgb', rgb);
 }
 
 // --- Authentication (PAT) ---
@@ -221,14 +208,14 @@ async function renderHome() {
     if (!state.currentRepo) {
         elements.content.innerHTML = `
             <div class="space-y-6">
-                <div class="glass-card p-6 rounded-3xl accent-border relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 accent-bg opacity-5 rounded-full -mr-16 -mt-16"></div>
+                <div class="glass-card p-6 rounded-3xl relative overflow-hidden border-[#333333]">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                     <h3 class="text-2xl font-black text-white tracking-tighter leading-tight">Welcome, ${state.user.name || state.user.login}!</h3>
-                    <p class="text-[10px] accent-text opacity-60 mt-2 font-black uppercase tracking-[0.2em]">Select a repository to manage files.</p>
+                    <p class="text-[10px] text-[#888888] mt-2 font-black uppercase tracking-[0.2em]">Select a repository to manage files.</p>
                 </div>
                 <div class="flex items-center justify-between px-2">
                     <h4 class="text-[10px] font-black text-white/40 uppercase tracking-widest">Recent Repositories</h4>
-                    <button onclick="switchTab('repos')" class="text-[10px] font-black accent-text uppercase tracking-widest">View All</button>
+                    <button onclick="switchTab('repos')" class="text-[10px] font-black text-white uppercase tracking-widest">View All</button>
                 </div>
                 <div id="home-repo-list" class="space-y-3">
                     <div class="loader mx-auto my-10"></div>
@@ -240,14 +227,14 @@ async function renderHome() {
         if (homeRepoList) {
             const recentRepos = state.repos.slice(0, 5);
             homeRepoList.innerHTML = recentRepos.map(repo => `
-                <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="openRepoActionSheet('${repo.full_name}', '${repo.name}')">
+                <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-[#333333]" onclick="openRepoActionSheet('${repo.full_name}', '${repo.name}')">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 accent-bg opacity-10 rounded-2xl flex items-center justify-center accent-text">
+                        <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
                             <i class="fas fa-book text-lg"></i>
                         </div>
                         <div>
                             <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                            <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? 'Private' : 'Public'}</p>
+                            <p class="text-[10px] text-[#888888] font-black uppercase tracking-widest mt-0.5">${repo.private ? 'Private' : 'Public'}</p>
                         </div>
                     </div>
                     <i class="fas fa-ellipsis-v text-white/10 text-xs"></i>
@@ -272,18 +259,18 @@ function renderRepoList() {
         <div class="space-y-4">
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm"></i>
-                <input id="repo-search" type="text" placeholder="Search repositories..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-12 pr-4 text-sm text-white outline-none focus:border-accent transition-all font-bold uppercase tracking-tight">
+                <input id="repo-search" type="text" placeholder="Search repositories..." class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl py-5 pl-12 pr-4 text-sm text-white outline-none focus:border-white transition-all font-bold uppercase tracking-tight">
             </div>
             <div id="repo-list-container" class="space-y-3">
                 ${state.repos.map(repo => `
-                    <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="openRepoActionSheet('${repo.full_name}', '${repo.name}')">
+                    <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-[#333333]" onclick="openRepoActionSheet('${repo.full_name}', '${repo.name}')">
                         <div class="flex items-center gap-4 flex-1 min-w-0">
-                            <div class="w-12 h-12 accent-bg opacity-10 rounded-2xl flex items-center justify-center accent-text">
+                            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
                                 <i class="fas fa-book text-lg"></i>
                             </div>
                             <div class="min-w-0">
                                 <h3 class="font-black text-white text-sm tracking-tight truncate">${repo.name}</h3>
-                                <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? 'Private' : 'Public'}</p>
+                                <p class="text-[10px] text-[#888888] font-black uppercase tracking-widest mt-0.5">${repo.private ? 'Private' : 'Public'}</p>
                             </div>
                         </div>
                         <i class="fas fa-ellipsis-v text-white/10 text-xs"></i>
@@ -341,16 +328,16 @@ function renderBreadcrumbs() {
 function renderContentsList() {
     const listHtml = state.contents.map(item => {
         const isDir = item.type === 'dir';
-        const icon = isDir ? 'fa-folder accent-text' : getFileIcon(item.name);
+        const icon = isDir ? 'fa-folder text-white' : getFileIcon(item.name);
         return `
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between group border-white/5 active:scale-[0.98] transition-all" onclick="openItemActionSheet('${item.path}', '${item.name}', '${item.type}', '${item.download_url}')">
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between group border-[#333333] active:scale-[0.98] transition-all" onclick="openItemActionSheet('${item.path}', '${item.name}', '${item.type}', '${item.download_url}')">
                 <div class="flex items-center gap-4 flex-1 min-w-0">
-                    <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center ${isDir ? 'accent-text' : 'text-white/40'}">
+                    <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center ${isDir ? 'text-white' : 'text-white/40'}">
                         <i class="fas ${icon} text-lg"></i>
                     </div>
                     <div class="min-w-0">
                         <h4 class="text-xs font-black text-white truncate tracking-tight">${item.name}</h4>
-                        <p class="text-[9px] text-white/40 font-black uppercase tracking-widest mt-0.5">${isDir ? 'Folder' : formatSize(item.size)}</p>
+                        <p class="text-[9px] text-[#888888] font-black uppercase tracking-widest mt-0.5">${isDir ? 'Folder' : formatSize(item.size)}</p>
                     </div>
                 </div>
                 <i class="fas fa-ellipsis-v text-white/10 text-xs"></i>
@@ -360,11 +347,11 @@ function renderContentsList() {
     
     const actionButtons = `
         <div class="grid grid-cols-2 gap-3 mb-4">
-            <button onclick="promptNewFile()" class="flex items-center justify-center gap-2 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-accent/30 transition-all">
-                <i class="fas fa-plus accent-text"></i> New File
+            <button onclick="promptNewFile()" class="flex items-center justify-center gap-2 py-4 bg-[#1a1a1a] border border-[#333333] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-white/30 transition-all">
+                <i class="fas fa-plus text-white"></i> New File
             </button>
-            <button onclick="promptNewFolder()" class="flex items-center justify-center gap-2 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-accent/30 transition-all">
-                <i class="fas fa-folder-plus accent-text"></i> New Folder
+            <button onclick="promptNewFolder()" class="flex items-center justify-center gap-2 py-4 bg-[#1a1a1a] border border-[#333333] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-white/30 transition-all">
+                <i class="fas fa-folder-plus text-white"></i> New Folder
             </button>
         </div>
     `;
@@ -372,7 +359,7 @@ function renderContentsList() {
     const headerHtml = `
         <div class="flex items-center justify-between px-2 mb-4 mt-6">
             <h4 class="text-[10px] font-black text-white/40 uppercase tracking-widest">Files & Folders</h4>
-            <button onclick="downloadFolderAsZip('${state.currentPath}', '${state.currentRepo.name}')" class="text-[10px] font-black accent-text uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 active:scale-95 transition-all">
+            <button onclick="downloadFolderAsZip('${state.currentPath}', '${state.currentRepo.name}')" class="text-[10px] font-black text-white uppercase tracking-widest bg-[#1a1a1a] px-3 py-1.5 rounded-lg border border-[#333333] active:scale-95 transition-all">
                 <i class="fas fa-file-archive mr-1"></i> ZIP
             </button>
         </div>
@@ -384,9 +371,9 @@ function renderContentsList() {
 function renderUpload() {
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl space-y-5 border-white/5">
-                <h4 class="text-[10px] font-black accent-text uppercase tracking-widest">Target Repository</h4>
-                <select id="upload-repo" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-accent appearance-none font-black uppercase tracking-tight">
+            <div class="glass-card p-6 rounded-3xl space-y-5 border-[#333333]">
+                <h4 class="text-[10px] font-black text-white uppercase tracking-widest">Target Repository</h4>
+                <select id="upload-repo" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white appearance-none font-black uppercase tracking-tight">
                     <option value="">Select a repository</option>
                     ${state.repos.map(r => `<option value="${r.full_name}">${r.full_name}</option>`).join('')}
                 </select>
@@ -394,25 +381,25 @@ function renderUpload() {
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Branch</label>
-                        <input id="upload-branch" type="text" value="main" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-accent font-black uppercase tracking-tight transition-all">
+                        <input id="upload-branch" type="text" value="main" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-black uppercase tracking-tight transition-all">
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Path</label>
-                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-accent font-black uppercase tracking-tight transition-all">
+                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-black uppercase tracking-tight transition-all">
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-white/5 border-dashed border-2 hover:border-accent/30">
-                    <div class="w-12 h-12 accent-bg opacity-10 rounded-2xl flex items-center justify-center accent-text">
+                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#333333] border-dashed border-2 hover:border-white/30">
+                    <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
                         <i class="fas fa-file-alt text-xl"></i>
                     </div>
                     <span class="text-[9px] font-black uppercase tracking-widest text-white/60">Select Files</span>
                     <input type="file" id="file-input" multiple class="hidden">
                 </label>
-                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-white/5 border-dashed border-2 hover:border-accent/30">
-                    <div class="w-12 h-12 accent-bg opacity-10 rounded-2xl flex items-center justify-center accent-text">
+                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#333333] border-dashed border-2 hover:border-white/30">
+                    <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
                         <i class="fas fa-folder-open text-xl"></i>
                     </div>
                     <span class="text-[9px] font-black uppercase tracking-widest text-white/60">Select Folder</span>
@@ -420,13 +407,13 @@ function renderUpload() {
                 </label>
             </div>
 
-            <div id="upload-status" class="hidden glass-card p-6 rounded-3xl space-y-4 border-accent/20">
+            <div id="upload-status" class="hidden glass-card p-6 rounded-3xl space-y-4 border-white/20">
                 <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                    <span id="upload-progress-text" class="accent-text">Uploading...</span>
+                    <span id="upload-progress-text" class="text-white">Uploading...</span>
                     <span id="upload-percentage" class="text-white">0%</span>
                 </div>
                 <div class="h-2 bg-white/5 rounded-full overflow-hidden">
-                    <div id="upload-progress-bar" class="h-full accent-bg transition-all duration-300 shadow-[0_0_15px_var(--accent-glow)]" style="width: 0%"></div>
+                    <div id="upload-progress-bar" class="h-full bg-white transition-all duration-300" style="width: 0%"></div>
                 </div>
             </div>
 
@@ -454,41 +441,31 @@ function renderUpload() {
 function renderSettings() {
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl flex items-center gap-6 border-white/5 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 accent-bg opacity-5 rounded-full -mr-16 -mt-16"></div>
+            <div class="glass-card p-6 rounded-3xl flex items-center gap-6 border-[#333333] relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16"></div>
                 <div class="relative">
                     <img src="${state.user.avatar_url}" class="w-20 h-20 rounded-2xl border-2 border-white/10 shadow-2xl">
-                    <div class="absolute -bottom-1 -right-1 w-6 h-6 accent-bg rounded-full border-4 border-[#111111] shadow-lg"></div>
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border-4 border-[#111111] shadow-lg"></div>
                 </div>
                 <div class="relative z-10">
                     <h3 class="text-2xl font-black text-white tracking-tighter leading-none">${state.user.name || state.user.login}</h3>
-                    <p class="text-[10px] accent-text font-black uppercase tracking-widest mt-2">@${state.user.login}</p>
+                    <p class="text-[10px] text-[#888888] font-black uppercase tracking-widest mt-2">@${state.user.login}</p>
                 </div>
             </div>
 
-            <div class="space-y-3">
-                <h4 class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-2">Theme Switcher</h4>
-                <div class="glass-card p-4 rounded-3xl flex items-center justify-between border-white/5">
-                    <span class="text-xs font-black text-white uppercase tracking-tight">Cyber Blue Theme</span>
-                    <button onclick="toggleTheme()" class="w-14 h-8 bg-white/5 rounded-full relative p-1 transition-all">
-                        <div class="w-6 h-6 rounded-full transition-all ${state.theme === 'cyber-blue' ? 'translate-x-6 accent-bg' : 'bg-white/20'}"></div>
-                    </button>
-                </div>
-            </div>
-
-            <div class="glass-card rounded-3xl overflow-hidden divide-y divide-white/5 border-white/5">
+            <div class="glass-card rounded-3xl overflow-hidden divide-y divide-[#333333] border-[#333333]">
                 <div class="p-5 flex items-center justify-between">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center accent-text">
+                        <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white">
                             <i class="fas fa-shield-alt"></i>
                         </div>
                         <span class="text-xs font-black text-white uppercase tracking-tight">Auth Mode</span>
                     </div>
-                    <span class="text-[9px] bg-white/5 accent-text px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-white/10">PAT Access</span>
+                    <span class="text-[9px] bg-white/5 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-[#333333]">PAT Access</span>
                 </div>
-                <div class="p-5 flex items-center justify-between active:bg-red-500/5 transition-colors" onclick="logout()">
-                    <div class="flex items-center gap-4 text-red-500">
-                        <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center">
+                <div class="p-5 flex items-center justify-between active:bg-white/5 transition-colors" onclick="logout()">
+                    <div class="flex items-center gap-4 text-white">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
                             <i class="fas fa-sign-out-alt"></i>
                         </div>
                         <span class="text-xs font-black uppercase tracking-tight">Sign Out</span>
@@ -566,8 +543,18 @@ async function editFile(path, name) {
             headers: { 'Authorization': `token ${state.token}` }
         });
         const data = await res.json();
-        const content = atob(data.content);
         
+        // Check if it's a text file
+        if (data.encoding !== 'base64') {
+            throw new Error("This file type cannot be edited in the browser.");
+        }
+
+        const content = atob(data.content);
+        // Simple check for binary content
+        if (/[\x00-\x08\x0E-\x1F]/.test(content)) {
+            throw new Error("Binary files cannot be edited.");
+        }
+
         elements.editFilename.textContent = `Editing: ${name}`;
         elements.editContent.value = content;
         
@@ -575,7 +562,7 @@ async function editFile(path, name) {
         
         openModal('edit-modal');
     } catch (err) {
-        showToast("Failed to load file: " + err.message, 'error');
+        showToast(err.message, 'error');
     } finally {
         showGlobalLoader(false);
     }
@@ -1034,7 +1021,7 @@ function closeActionSheet() {
 function openRepoActionSheet(fullName, name) {
     const actions = [
         { label: 'Open Repository', icon: 'fa-external-link-alt', handler: `selectRepo('${fullName}')` },
-        { label: 'Delete Repository', icon: 'fa-trash-alt text-red-500', handler: `confirmDeleteRepo('${fullName}')` }
+        { label: 'Delete Repository', icon: 'fa-trash-alt', handler: `confirmDeleteRepo('${fullName}')` }
     ];
     openActionSheet(name, 'Repository', actions);
 }
@@ -1050,7 +1037,7 @@ function openItemActionSheet(path, name, type, downloadUrl) {
             { label: 'New Folder', icon: 'fa-folder-plus', handler: `promptNewFolder()` },
             { label: 'Rename', icon: 'fa-edit', handler: `confirmRename('${path}', '${name}', true)` },
             { label: 'Download ZIP', icon: 'fa-file-archive', handler: `downloadFolderAsZip('${path}', '${name}')` },
-            { label: 'Delete', icon: 'fa-trash-alt text-red-500', handler: `confirmDelete('${path}', '${name}', true)` }
+            { label: 'Delete', icon: 'fa-trash-alt', handler: `confirmDelete('${path}', '${name}', true)` }
         ];
     } else {
         actions = [
@@ -1058,7 +1045,7 @@ function openItemActionSheet(path, name, type, downloadUrl) {
             { label: 'Rename', icon: 'fa-signature', handler: `confirmRename('${path}', '${name}', false)` },
             { label: 'Download', icon: 'fa-download', handler: `downloadFile('${downloadUrl}', '${name}')` },
             { label: 'Copy Path', icon: 'fa-copy', handler: `copyToClipboard('${path}')` },
-            { label: 'Delete', icon: 'fa-trash-alt text-red-500', handler: `confirmDelete('${path}', '${name}', false)` }
+            { label: 'Delete', icon: 'fa-trash-alt', handler: `confirmDelete('${path}', '${name}', false)` }
         ];
     }
     
@@ -1105,17 +1092,17 @@ async function editorAction(action) {
 function getFileIcon(name) {
     const ext = name.split('.').pop().toLowerCase();
     const icons = {
-        'js': 'fa-js text-yellow-400',
-        'ts': 'fa-code text-blue-400',
-        'html': 'fa-html5 text-orange-500',
-        'css': 'fa-css3 text-blue-400',
-        'json': 'fa-code accent-text',
+        'js': 'fa-js text-white',
+        'ts': 'fa-code text-white',
+        'html': 'fa-html5 text-white',
+        'css': 'fa-css3 text-white',
+        'json': 'fa-code text-white',
         'md': 'fa-file-alt text-white/40',
-        'png': 'fa-image accent-text',
-        'jpg': 'fa-image accent-text',
-        'svg': 'fa-image accent-text',
-        'pdf': 'fa-file-pdf text-red-500',
-        'zip': 'fa-file-archive accent-text'
+        'png': 'fa-image text-white',
+        'jpg': 'fa-image text-white',
+        'svg': 'fa-image text-white',
+        'pdf': 'fa-file-pdf text-white',
+        'zip': 'fa-file-archive text-white'
     };
     return icons[ext] || 'fa-file text-white/20';
 }
@@ -1136,7 +1123,7 @@ function formatSize(bytes) {
 
 function showToast(message, type = 'success', duration = 3000) {
     elements.toast.textContent = message;
-    elements.toast.className = `fixed bottom-28 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-[10px] font-black shadow-2xl transition-all pointer-events-none z-[200] uppercase tracking-widest ${type === 'error' ? 'bg-red-600 text-white' : 'accent-bg text-black'}`;
+    elements.toast.className = `fixed bottom-28 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-[10px] font-black shadow-2xl transition-all pointer-events-none z-[200] uppercase tracking-widest ${type === 'error' ? 'bg-black text-white border border-[#333333]' : 'bg-white text-black'}`;
     elements.toast.classList.add('opacity-100', 'bottom-32');
     setTimeout(() => {
         elements.toast.classList.remove('opacity-100', 'bottom-32');
@@ -1173,7 +1160,6 @@ window.switchTab = switchTab;
 window.downloadFile = downloadFile;
 window.downloadFolderAsZip = downloadFolderAsZip;
 window.logout = logout;
-window.setTheme = setTheme;
 window.closeModal = closeModal;
 window.handleFileClick = handleFileClick;
 window.confirmDelete = confirmDelete;
@@ -1184,7 +1170,6 @@ window.confirmDeleteRepo = confirmDeleteRepo;
 window.openRepoActionSheet = openRepoActionSheet;
 window.openItemActionSheet = openItemActionSheet;
 window.closeActionSheet = closeActionSheet;
-window.toggleTheme = toggleTheme;
 window.editorAction = editorAction;
 window.copyToClipboard = copyToClipboard;
 

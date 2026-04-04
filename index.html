@@ -11,16 +11,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            --bg-deep: #0a0a0a;
-            --bg-card: #111111;
-            --text-main: #e0e0e0;
-            --accent: #39ff14;
-            --accent-glow: rgba(57, 255, 20, 0.3);
-        }
-        
-        [data-theme="cyber-blue"] {
-            --accent: #00d4ff;
-            --accent-glow: rgba(0, 212, 255, 0.3);
+            --bg-deep: #000000;
+            --bg-card: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --border: #333333;
+            --accent: #ffffff;
+            --accent-muted: #888888;
         }
 
         body {
@@ -33,17 +30,13 @@
         }
         .glass-card {
             background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: border-color 0.3s ease;
+            border: 1px solid var(--border);
         }
         .nav-item {
-            color: #666666;
+            color: var(--text-muted);
         }
         .nav-item.active {
             color: var(--accent);
-        }
-        .nav-item.active i {
-            text-shadow: 0 0 15px var(--accent-glow);
         }
         .safe-bottom {
             padding-bottom: env(safe-area-inset-bottom);
@@ -64,19 +57,17 @@
         .btn-primary {
             background-color: var(--accent);
             color: #000000;
-            box-shadow: 0 0 20px var(--accent-glow);
         }
         .btn-primary:active {
             transform: scale(0.95);
         }
         
         input:focus, select:focus, textarea:focus {
-            box-shadow: 0 0 0 2px var(--accent-glow);
             border-color: var(--accent) !important;
         }
 
         .modal-overlay {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(4px);
         }
 
@@ -97,39 +88,39 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col" data-theme="neon-green">
+<body class="min-h-screen flex flex-col">
 
     <!-- Global Loading Overlay -->
-    <div id="global-loader" class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden">
+    <div id="global-loader" class="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm flex items-center justify-center hidden">
         <div class="flex flex-col items-center gap-4">
             <div class="loader w-12 h-12 border-4"></div>
-            <p class="text-[10px] font-black uppercase tracking-[0.3em] accent-text">Processing</p>
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-white">Processing</p>
         </div>
     </div>
 
     <!-- Auth Screen -->
-    <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center">
+    <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#000000] flex flex-col items-center justify-center p-6 text-center">
         <div class="mb-10">
-            <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+            <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-8">
                 <i class="fab fa-github text-6xl text-black"></i>
             </div>
-            <h1 class="text-4xl font-black text-white uppercase tracking-tighter">OneCore <span class="accent-text">GitHub</span></h1>
-            <p class="text-white/20 mt-3 text-xs font-black uppercase tracking-[0.3em]">File Manager Pro</p>
+            <h1 class="text-4xl font-black text-white uppercase tracking-tighter">OneCore GitHub</h1>
+            <p class="text-[#888888] mt-3 text-xs font-black uppercase tracking-[0.3em]">File Manager Pro</p>
         </div>
 
         <div id="login-initial" class="w-full max-w-xs space-y-6">
             <div class="space-y-2 text-left">
-                <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Personal Access Token (Classic)</label>
-                <input id="pat-input" type="password" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm text-white outline-none focus:border-accent transition-all font-bold">
+                <label class="text-[10px] font-black text-[#888888] uppercase tracking-widest ml-1">Personal Access Token (Classic)</label>
+                <input id="pat-input" type="password" placeholder="ghp_xxxxxxxxxxxx" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl py-5 px-6 text-sm text-white outline-none focus:border-white transition-all font-bold">
             </div>
             
             <button id="btn-login" class="w-full btn-primary font-black py-5 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
                 Login
             </button>
 
-            <div class="glass-card p-5 rounded-2xl text-left border-white/5 space-y-3">
-                <h5 class="text-[10px] font-black accent-text uppercase tracking-widest">How to get your GitHub token:</h5>
-                <div class="text-[9px] text-white/60 font-bold leading-relaxed space-y-2">
+            <div class="glass-card p-5 rounded-2xl text-left border-[#333333] space-y-3">
+                <h5 class="text-[10px] font-black text-white uppercase tracking-widest">How to get your GitHub token:</h5>
+                <div class="text-[9px] text-[#888888] font-bold leading-relaxed space-y-2">
                     <p>1. Open GitHub.com and go to Settings.</p>
                     <p>2. Select Developer settings > Personal access tokens > Tokens (classic).</p>
                     <p>3. Click Generate new token (classic).</p>
@@ -138,46 +129,46 @@
                     <p>6. Click Generate token and copy the value (starts with ghp_).</p>
                     <p>7. Paste the token below and tap Login.</p>
                 </div>
-                <p class="text-[8px] text-white/20 font-black uppercase tracking-tighter mt-2 italic">Token is like a password. Keep it secret. You can revoke it anytime.</p>
+                <p class="text-[8px] text-[#333333] font-black uppercase tracking-tighter mt-2 italic">Token is like a password. Keep it secret. You can revoke it anytime.</p>
             </div>
         </div>
 
         <div id="login-loading" class="w-full max-w-xs hidden">
             <div class="loader mx-auto mb-4"></div>
-            <p class="text-[10px] accent-text font-black uppercase tracking-widest">Validating Token</p>
+            <p class="text-[10px] text-white font-black uppercase tracking-widest">Validating Token</p>
         </div>
     </div>
 
     <!-- Edit Modal -->
     <div id="edit-modal" class="fixed inset-0 z-[250] modal-overlay flex items-center justify-center p-4 hidden">
-        <div class="glass-card w-full max-w-2xl rounded-[2rem] flex flex-col max-h-[90vh] overflow-hidden">
-            <div class="p-6 border-b border-white/5 flex items-center justify-between">
+        <div class="glass-card w-full max-w-2xl rounded-[2rem] flex flex-col max-h-[90vh] overflow-hidden border-[#333333]">
+            <div class="p-6 border-b border-[#333333] flex items-center justify-between">
                 <h3 id="edit-filename" class="text-sm font-black text-white uppercase tracking-tight truncate pr-4">Edit File</h3>
-                <button onclick="closeModal('edit-modal')" class="text-white/40 hover:text-white p-2"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal('edit-modal')" class="text-[#888888] hover:text-white p-2"><i class="fas fa-times"></i></button>
             </div>
-            <div class="bg-black/20 p-2 flex gap-2 border-b border-white/5 overflow-x-auto no-scrollbar">
-                <button onclick="editorAction('cut')" class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white/60 hover:accent-text">Cut</button>
-                <button onclick="editorAction('copy')" class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white/60 hover:accent-text">Copy</button>
-                <button onclick="editorAction('paste')" class="px-4 py-2 bg-white/5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white/60 hover:accent-text">Paste</button>
+            <div class="bg-black/20 p-2 flex gap-2 border-b border-[#333333] overflow-x-auto no-scrollbar">
+                <button onclick="editorAction('cut')" class="px-4 py-2 bg-[#1a1a1a] border border-[#333333] rounded-lg text-[10px] font-black uppercase tracking-widest text-[#888888] hover:text-white">Cut</button>
+                <button onclick="editorAction('copy')" class="px-4 py-2 bg-[#1a1a1a] border border-[#333333] rounded-lg text-[10px] font-black uppercase tracking-widest text-[#888888] hover:text-white">Copy</button>
+                <button onclick="editorAction('paste')" class="px-4 py-2 bg-[#1a1a1a] border border-[#333333] rounded-lg text-[10px] font-black uppercase tracking-widest text-[#888888] hover:text-white">Paste</button>
             </div>
             <div class="flex-1 overflow-y-auto p-4">
-                <textarea id="edit-content" class="w-full h-full min-h-[300px] bg-black/50 border border-white/10 rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-accent resize-none"></textarea>
+                <textarea id="edit-content" class="w-full h-full min-h-[300px] bg-[#000000] border border-[#333333] rounded-xl p-4 text-xs font-mono text-white outline-none focus:border-white resize-none"></textarea>
             </div>
-            <div class="p-6 border-t border-white/5 flex gap-3">
-                <button onclick="closeModal('edit-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10">Cancel</button>
+            <div class="p-6 border-t border-[#333333] flex gap-3">
+                <button onclick="closeModal('edit-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#888888] border border-[#333333]">Cancel</button>
                 <button id="btn-save-file" class="flex-1 btn-primary py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Save</button>
             </div>
         </div>
     </div>
 
     <!-- Bottom Action Sheet -->
-    <div id="action-sheet-overlay" class="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm hidden" onclick="closeActionSheet()"></div>
-    <div id="action-sheet" class="fixed bottom-0 left-0 right-0 z-[210] bg-[#111111] rounded-t-[2.5rem] border-t border-white/10 safe-bottom overflow-hidden">
-        <div class="w-12 h-1.5 bg-white/10 rounded-full mx-auto my-4"></div>
+    <div id="action-sheet-overlay" class="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm hidden" onclick="closeActionSheet()"></div>
+    <div id="action-sheet" class="fixed bottom-0 left-0 right-0 z-[210] bg-[#1a1a1a] rounded-t-[2.5rem] border-t border-[#333333] safe-bottom overflow-hidden">
+        <div class="w-12 h-1.5 bg-[#333333] rounded-full mx-auto my-4"></div>
         <div class="px-6 pb-8">
             <div id="sheet-header" class="mb-6">
                 <h3 id="sheet-title" class="text-lg font-black text-white uppercase tracking-tight truncate">Item Name</h3>
-                <p id="sheet-subtitle" class="text-[10px] accent-text font-black uppercase tracking-widest mt-1">File</p>
+                <p id="sheet-subtitle" class="text-[10px] text-[#888888] font-black uppercase tracking-widest mt-1">File</p>
             </div>
             <div id="sheet-actions" class="grid grid-cols-1 gap-1">
                 <!-- Actions will be injected here -->
@@ -187,31 +178,31 @@
 
     <!-- Confirm Modal -->
     <div id="confirm-modal" class="fixed inset-0 z-[250] modal-overlay flex items-center justify-center p-6 hidden">
-        <div class="glass-card w-full max-w-xs rounded-[2rem] p-8 text-center space-y-6">
-            <div class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto text-red-500">
+        <div class="glass-card w-full max-w-xs rounded-[2rem] p-8 text-center space-y-6 border-[#333333]">
+            <div class="w-16 h-16 bg-[#333333] rounded-2xl flex items-center justify-center mx-auto text-white">
                 <i class="fas fa-exclamation-triangle text-2xl"></i>
             </div>
             <div>
                 <h3 id="confirm-title" class="text-lg font-black text-white uppercase tracking-tight">Are you sure?</h3>
-                <p id="confirm-message" class="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-2 leading-relaxed">This action cannot be undone.</p>
+                <p id="confirm-message" class="text-[10px] text-[#888888] font-bold uppercase tracking-widest mt-2 leading-relaxed">This action cannot be undone.</p>
             </div>
             <div class="flex gap-3">
-                <button onclick="closeModal('confirm-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10">Cancel</button>
-                <button id="btn-confirm-action" class="flex-1 bg-red-500 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.2)]">Delete</button>
+                <button onclick="closeModal('confirm-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#888888] border border-[#333333]">Cancel</button>
+                <button id="btn-confirm-action" class="flex-1 bg-white text-black py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Delete</button>
             </div>
         </div>
     </div>
 
     <!-- Prompt Modal -->
     <div id="prompt-modal" class="fixed inset-0 z-[250] modal-overlay flex items-center justify-center p-6 hidden">
-        <div class="glass-card w-full max-w-xs rounded-[2rem] p-8 space-y-6">
+        <div class="glass-card w-full max-w-xs rounded-[2rem] p-8 space-y-6 border-[#333333]">
             <div>
                 <h3 id="prompt-title" class="text-lg font-black text-white uppercase tracking-tight">Rename</h3>
-                <p id="prompt-message" class="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Enter new name</p>
+                <p id="prompt-message" class="text-[10px] text-[#888888] font-bold uppercase tracking-widest mt-1">Enter new name</p>
             </div>
-            <input id="prompt-input" type="text" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white outline-none focus:border-accent font-bold">
+            <input id="prompt-input" type="text" class="w-full bg-[#000000] border border-[#333333] rounded-xl p-4 text-sm text-white outline-none focus:border-white font-bold">
             <div class="flex gap-3">
-                <button onclick="closeModal('prompt-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 border border-white/10">Cancel</button>
+                <button onclick="closeModal('prompt-modal')" class="flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#888888] border border-[#333333]">Cancel</button>
                 <button id="btn-prompt-action" class="flex-1 btn-primary py-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Confirm</button>
             </div>
         </div>
@@ -220,18 +211,18 @@
     <!-- Main App Container -->
     <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar pb-24 hidden">
         <!-- Header -->
-        <header class="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+        <header class="sticky top-0 z-50 bg-[#000000]/90 backdrop-blur-xl border-b border-[#333333] p-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div id="user-avatar" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+                <div id="user-avatar" class="w-10 h-10 rounded-xl bg-[#1a1a1a] border border-[#333333] overflow-hidden">
                     <img src="" alt="" class="w-full h-full object-cover hidden">
                 </div>
                 <div>
                     <h2 id="view-title" class="text-lg font-black text-white uppercase tracking-tight leading-none">Home</h2>
-                    <p id="view-subtitle" class="text-[9px] accent-text font-black uppercase tracking-widest mt-1">File Explorer</p>
+                    <p id="view-subtitle" class="text-[9px] text-[#888888] font-black uppercase tracking-widest mt-1">File Explorer</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="btn-refresh" class="w-10 h-10 flex items-center justify-center text-white/40 hover:accent-text transition-colors"><i class="fas fa-sync-alt"></i></button>
+                <button id="btn-refresh" class="w-10 h-10 flex items-center justify-center text-[#888888] hover:text-white transition-colors"><i class="fas fa-sync-alt"></i></button>
             </div>
         </header>
 
@@ -242,7 +233,7 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 glass-card border-t border-white/5 safe-bottom z-50 hidden">
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-[#333333] safe-bottom z-50 hidden">
         <div class="flex items-center justify-around p-2">
             <button data-tab="home" class="nav-item flex flex-col items-center gap-1 p-2 transition-all active">
                 <i class="fas fa-home text-xl"></i>
@@ -264,7 +255,7 @@
     </nav>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 accent-bg text-black px-6 py-3 rounded-full text-[10px] font-black shadow-2xl opacity-0 transition-all pointer-events-none z-[200] uppercase tracking-widest">
+    <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-3 rounded-full text-[10px] font-black shadow-2xl opacity-0 transition-all pointer-events-none z-[200] uppercase tracking-widest">
         Notification message
     </div>
 
