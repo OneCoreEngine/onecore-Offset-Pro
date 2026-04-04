@@ -3,7 +3,7 @@
  * Author: AI Studio Build
  */
 
-const GITHUB_CLIENT_ID = "YOUR_GITHUB_CLIENT_ID"; // User to replace this
+const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID || "YOUR_GITHUB_CLIENT_ID"; // User to replace this
 const GITHUB_API_BASE = "https://api.github.com";
 const GITHUB_AUTH_BASE = "https://github.com/login";
 
