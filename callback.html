@@ -19,11 +19,18 @@
         if (code) {
             const codeVerifier = sessionStorage.getItem('gh_code_verifier');
             
-            // Exchange code for token via serverless function
-            fetch('/api/exchange', {
+            // Exchange code for token directly from browser (Note: This may hit CORS issues if GitHub doesn't allow it)
+            const formData = new FormData();
+            formData.append('client_id', 'Ov231i4bnJffZb9RGhUK');
+            formData.append('code', code);
+            formData.append('code_verifier', codeVerifier);
+            formData.append('grant_type', 'authorization_code');
+            formData.append('redirect_uri', window.location.origin + '/callback.html');
+
+            fetch('https://github.com/login/oauth/access_token', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, code_verifier: codeVerifier })
+                headers: { 'Accept': 'application/json' },
+                body: formData
             })
             .then(res => res.json())
             .then(data => {
@@ -36,7 +43,8 @@
                 }
             })
             .catch(err => {
-                window.opener.postMessage({ error: 'Network error during token exchange' }, window.location.origin);
+                console.error(err);
+                window.opener.postMessage({ error: 'CORS or Network error during token exchange. GitHub does not support direct browser-to-token-endpoint calls without a proxy.' }, window.location.origin);
                 window.close();
             });
         } else if (error) {
