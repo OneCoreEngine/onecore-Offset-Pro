@@ -244,17 +244,17 @@ async function renderHome() {
         elements.viewTitle.textContent = "OneCore Home";
         elements.content.innerHTML = `
             <div class="space-y-6">
-                <div class="glass-card p-6 rounded-2xl bg-gradient-to-br from-purple-900/20 to-transparent border-purple-500/20">
-                    <h3 class="text-xl font-black text-white mb-2">Welcome, ${state.user.name || state.user.login}!</h3>
-                    <p class="text-xs text-muted-purple leading-relaxed">
+                <div class="glass-card p-6 rounded-3xl bg-gradient-to-br from-neon-green/5 to-transparent border-neon-green/10">
+                    <h3 class="text-xl font-black text-white mb-2">Welcome, <span class="text-neon">${state.user.name || state.user.login}</span></h3>
+                    <p class="text-xs text-white/50 leading-relaxed font-medium">
                         Manage your GitHub repositories and files with OneCore. 
                         Browse, upload, and download as ZIP directly from your mobile device.
                     </p>
                 </div>
                 
                 <div class="flex items-center justify-between px-2">
-                    <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Your Repositories</h4>
-                    <button onclick="switchTab('repos')" class="text-[10px] font-bold text-muted-purple hover:text-white uppercase tracking-tighter">View All</button>
+                    <h4 class="text-[10px] font-black text-neon uppercase tracking-widest">Recent Repositories</h4>
+                    <button onclick="switchTab('repos')" class="text-[10px] font-bold text-white/40 hover:text-neon uppercase tracking-tighter transition-colors">View All</button>
                 </div>
                 
                 <div id="home-repo-list" class="space-y-3">
@@ -267,19 +267,19 @@ async function renderHome() {
         if (homeRepoList) {
             const recentRepos = state.repos.slice(0, 5);
             homeRepoList.innerHTML = recentRepos.map(repo => `
-                <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:scale-95 transition-transform" onclick="selectRepo('${repo.full_name}')">
+                <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="selectRepo('${repo.full_name}')">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 bg-purple-900/50 rounded-xl flex items-center justify-center text-purple-400">
-                            <i class="fas fa-book"></i>
+                        <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-neon shadow-inner">
+                            <i class="fas fa-book text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-white text-sm">${repo.name}</h3>
-                            <p class="text-[10px] text-muted-purple">${repo.private ? '<i class="fas fa-lock mr-1"></i>Private' : '<i class="fas fa-globe mr-1"></i>Public'}</p>
+                            <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
+                            <p class="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-neon/60"></i>Private' : '<i class="fas fa-globe mr-1 text-neon/60"></i>Public'}</p>
                         </div>
                     </div>
-                    <i class="fas fa-chevron-right text-muted-purple/40 text-xs"></i>
+                    <i class="fas fa-chevron-right text-white/20 text-xs"></i>
                 </div>
-            `).join('') || '<p class="text-center text-muted-purple py-10">No repositories found</p>';
+            `).join('') || '<p class="text-center text-white/40 py-10 font-bold uppercase tracking-widest text-[10px]">No repositories found</p>';
         }
     } else {
         elements.viewTitle.textContent = state.currentRepo.name;
@@ -294,35 +294,64 @@ async function renderRepos() {
 }
 
 function renderRepoList() {
-    elements.content.innerHTML = state.repos.map(repo => `
-        <div class="glass-card p-4 rounded-2xl flex items-center justify-between active:scale-95 transition-transform" onclick="selectRepo('${repo.full_name}')">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-purple-900/50 rounded-xl flex items-center justify-center text-purple-400">
-                    <i class="fas fa-book"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-white text-sm">${repo.name}</h3>
-                    <p class="text-[10px] text-muted-purple">${repo.private ? '<i class="fas fa-lock mr-1"></i>Private' : '<i class="fas fa-globe mr-1"></i>Public'}</p>
-                </div>
+    elements.content.innerHTML = `
+        <div class="space-y-4">
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm"></i>
+                <input id="repo-search" type="text" placeholder="Search repositories..." class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:border-neon/50 transition-all font-medium">
             </div>
-            <i class="fas fa-chevron-right text-muted-purple/40 text-xs"></i>
+            <div id="repo-list-container" class="space-y-3">
+                ${state.repos.map(repo => `
+                    <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="selectRepo('${repo.full_name}')">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-neon shadow-inner">
+                                <i class="fas fa-book text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
+                                <p class="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-neon/60"></i>Private' : '<i class="fas fa-globe mr-1 text-neon/60"></i>Public'}</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-white/20 text-xs"></i>
+                    </div>
+                `).join('')}
+            </div>
         </div>
-    `).join('') || '<p class="text-center text-muted-purple py-10">No repositories found</p>';
+    `;
+
+    document.getElementById('repo-search').oninput = (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = state.repos.filter(r => r.name.toLowerCase().includes(term));
+        document.getElementById('repo-list-container').innerHTML = filtered.map(repo => `
+            <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="selectRepo('${repo.full_name}')">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-neon shadow-inner">
+                        <i class="fas fa-book text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
+                        <p class="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-neon/60"></i>Private' : '<i class="fas fa-globe mr-1 text-neon/60"></i>Public'}</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-white/20 text-xs"></i>
+            </div>
+        `).join('');
+    };
 }
 
 function renderBreadcrumbs() {
     const parts = state.currentPath ? state.currentPath.split('/') : [];
     let html = `
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 text-xs font-bold uppercase tracking-widest text-muted-purple/60">
-            <span class="hover:text-purple-400 cursor-pointer" onclick="navigatePath('')">Root</span>
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 text-[10px] font-black uppercase tracking-widest text-white/40">
+            <span class="hover:text-neon cursor-pointer bg-white/5 px-3 py-1.5 rounded-lg border border-white/10" onclick="navigatePath('')">Root</span>
     `;
     
     let path = '';
     parts.forEach((part, i) => {
         path += (i === 0 ? '' : '/') + part;
         html += `
-            <i class="fas fa-chevron-right text-[8px]"></i>
-            <span class="hover:text-purple-400 cursor-pointer ${i === parts.length - 1 ? 'text-purple-400' : ''}" onclick="navigatePath('${path}')">${part}</span>
+            <i class="fas fa-chevron-right text-[8px] text-white/10"></i>
+            <span class="hover:text-neon cursor-pointer ${i === parts.length - 1 ? 'text-neon' : ''}" onclick="navigatePath('${path}')">${part}</span>
         `;
     });
     
@@ -333,79 +362,96 @@ function renderBreadcrumbs() {
 function renderContentsList() {
     const listHtml = state.contents.map(item => {
         const isDir = item.type === 'dir';
-        const icon = isDir ? 'fa-folder text-yellow-500' : getFileIcon(item.name);
+        const icon = isDir ? 'fa-folder text-neon' : getFileIcon(item.name);
         return `
-            <div class="glass-card p-3 rounded-xl flex items-center justify-between group">
-                <div class="flex items-center gap-3 flex-1 min-w-0" onclick="${isDir ? `navigatePath('${item.path}')` : `downloadFile('${item.download_url}', '${item.name}')`}">
-                    <i class="fas ${icon} text-lg w-6 text-center"></i>
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between group border-white/5 active:scale-95 transition-all">
+                <div class="flex items-center gap-4 flex-1 min-w-0" onclick="${isDir ? `navigatePath('${item.path}')` : `downloadFile('${item.download_url}', '${item.name}')`}">
+                    <div class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center ${isDir ? 'text-neon' : 'text-white/40'}">
+                        <i class="fas ${icon} text-lg"></i>
+                    </div>
                     <div class="min-w-0">
-                        <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
-                        <p class="text-[10px] text-muted-purple">${isDir ? 'Folder' : formatSize(item.size)}</p>
+                        <h4 class="text-xs font-black text-white truncate tracking-tight">${item.name}</h4>
+                        <p class="text-[9px] text-white/40 font-black uppercase tracking-widest mt-0.5">${isDir ? 'Folder' : formatSize(item.size)}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
                     ${isDir ? `
-                        <button onclick="downloadFolderAsZip('${item.path}', '${item.name}')" class="p-2 text-purple-400 hover:text-purple-300">
+                        <button onclick="downloadFolderAsZip('${item.path}', '${item.name}')" class="p-2 text-neon/40 hover:text-neon transition-colors">
                             <i class="fas fa-file-archive"></i>
                         </button>
                     ` : `
-                        <button onclick="downloadFile('${item.download_url}', '${item.name}')" class="p-2 text-purple-400 hover:text-purple-300">
+                        <button onclick="downloadFile('${item.download_url}', '${item.name}')" class="p-2 text-neon/40 hover:text-neon transition-colors">
                             <i class="fas fa-download"></i>
                         </button>
                     `}
                 </div>
             </div>
         `;
-    }).join('') || '<p class="text-center text-muted-purple py-10">This folder is empty</p>';
+    }).join('') || '<p class="text-center text-white/40 py-10 font-black uppercase tracking-widest text-[10px]">This folder is empty</p>';
     
-    elements.content.insertAdjacentHTML('beforeend', `<div class="space-y-2">${listHtml}</div>`);
+    const headerHtml = `
+        <div class="flex items-center justify-between px-2 mb-4 mt-6">
+            <h4 class="text-[10px] font-black text-white/40 uppercase tracking-widest">Files & Folders</h4>
+            <button onclick="downloadFolderAsZip('${state.currentPath}', '${state.currentRepo.name}')" class="text-[10px] font-black text-neon uppercase tracking-widest bg-neon/10 px-3 py-1.5 rounded-lg border border-neon/20 active:scale-95 transition-all">
+                <i class="fas fa-file-archive mr-1"></i> Download ZIP
+            </button>
+        </div>
+    `;
+    
+    elements.content.insertAdjacentHTML('beforeend', headerHtml + `<div class="space-y-2">${listHtml}</div>`);
 }
 
 function renderUpload() {
+    elements.viewTitle.textContent = "Upload Files";
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-2xl space-y-4">
-                <h3 class="text-sm font-bold text-white uppercase tracking-widest">Target Repository</h3>
-                <select id="upload-repo" class="w-full bg-[#0d0b1a] border border-purple-900/50 rounded-xl p-3 text-sm text-white outline-none focus:border-purple-500">
+            <div class="glass-card p-6 rounded-3xl space-y-4 border-white/5">
+                <h4 class="text-[10px] font-black text-neon uppercase tracking-widest">Target Repository</h4>
+                <select id="upload-repo" class="w-full bg-[#050505] border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-neon/50 appearance-none font-bold">
+                    <option value="">Select a repository</option>
                     ${state.repos.map(r => `<option value="${r.full_name}">${r.full_name}</option>`).join('')}
                 </select>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-muted-purple uppercase">Branch</label>
-                        <input id="upload-branch" type="text" value="main" class="w-full bg-[#05040a] border border-purple-900/50 rounded-xl p-3 text-sm text-white outline-none focus:border-purple-500">
+                        <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Branch</label>
+                        <input id="upload-branch" type="text" value="main" class="w-full bg-[#050505] border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-neon/50 font-bold transition-all">
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-muted-purple uppercase">Path</label>
-                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#05040a] border border-purple-900/50 rounded-xl p-3 text-sm text-white outline-none focus:border-purple-500">
+                        <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Path</label>
+                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#050505] border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-neon/50 font-bold transition-all">
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <label class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer active:scale-95 transition-all">
-                    <i class="fas fa-file-alt text-2xl text-purple-400"></i>
-                    <span class="text-[10px] font-black uppercase">Select Files</span>
+                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-white/5 border-dashed border-2 hover:border-neon/30">
+                    <div class="w-12 h-12 bg-neon/10 rounded-2xl flex items-center justify-center text-neon">
+                        <i class="fas fa-file-alt text-xl"></i>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-white/60">Select Files</span>
                     <input type="file" id="file-input" multiple class="hidden">
                 </label>
-                <label class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer active:scale-95 transition-all">
-                    <i class="fas fa-folder-open text-2xl text-purple-400"></i>
-                    <span class="text-[10px] font-black uppercase">Select Folder</span>
+                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-white/5 border-dashed border-2 hover:border-neon/30">
+                    <div class="w-12 h-12 bg-neon/10 rounded-2xl flex items-center justify-center text-neon">
+                        <i class="fas fa-folder-open text-xl"></i>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-white/60">Select Folder</span>
                     <input type="file" id="folder-input" webkitdirectory class="hidden">
                 </label>
             </div>
 
-            <div id="upload-status" class="hidden glass-card p-4 rounded-2xl space-y-3">
-                <div class="flex justify-between text-[10px] font-bold uppercase">
-                    <span id="upload-progress-text">Uploading...</span>
-                    <span id="upload-percentage">0%</span>
+            <div id="upload-status" class="hidden glass-card p-6 rounded-3xl space-y-4 border-neon/20">
+                <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <span id="upload-progress-text" class="text-neon">Uploading...</span>
+                    <span id="upload-percentage" class="text-white">0%</span>
                 </div>
-                <div class="h-2 bg-purple-900/30 rounded-full overflow-hidden">
-                    <div id="upload-progress-bar" class="h-full bg-purple-500 transition-all duration-300" style="width: 0%"></div>
+                <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div id="upload-progress-bar" class="h-full bg-neon transition-all duration-300 shadow-[0_0_10px_var(--neon-green)]" style="width: 0%"></div>
                 </div>
             </div>
 
-            <button id="btn-start-upload" class="w-full bg-purple-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-purple-500/20 uppercase tracking-widest disabled:opacity-50" disabled>
+            <button id="btn-start-upload" class="w-full btn-neon font-black py-4 rounded-2xl shadow-lg uppercase tracking-widest text-xs disabled:opacity-30 transition-all" disabled>
                 Start Upload
             </button>
         </div>
@@ -428,66 +474,71 @@ function renderUpload() {
 
 function renderSettings() {
     const currentClientId = localStorage.getItem('gh_client_id') || GITHUB_CLIENT_ID;
+    elements.viewTitle.textContent = "Settings";
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-2xl flex items-center gap-4">
+            <div class="glass-card p-6 rounded-3xl flex items-center gap-5 border-white/5">
                 <div class="relative">
-                    <img src="${state.user.avatar_url}" class="w-16 h-16 rounded-2xl border-2 border-purple-500/30">
-                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-[#05040a]"></div>
+                    <img src="${state.user.avatar_url}" class="w-20 h-20 rounded-2xl border-2 border-neon/20 shadow-lg">
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-neon rounded-full border-4 border-[#050505] shadow-lg"></div>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-white">${state.user.name || state.user.login}</h3>
-                    <p class="text-xs text-muted-purple">@${state.user.login}</p>
+                    <h3 class="text-xl font-black text-white tracking-tighter">${state.user.name || state.user.login}</h3>
+                    <p class="text-[10px] text-neon font-black uppercase tracking-widest mt-1">@${state.user.login}</p>
                 </div>
             </div>
 
-            <div class="glass-card p-6 rounded-2xl space-y-4">
-                <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Configuration</h4>
-                <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-muted-purple uppercase">GitHub Client ID</label>
+            <div class="glass-card p-6 rounded-3xl space-y-4 border-white/5">
+                <h4 class="text-[10px] font-black text-neon uppercase tracking-widest">Configuration</h4>
+                <div class="space-y-3">
+                    <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">GitHub Client ID</label>
                     <div class="flex gap-2">
-                        <input id="settings-client-id" type="text" value="${currentClientId === 'YOUR_GITHUB_CLIENT_ID' ? '' : currentClientId}" placeholder="Enter Client ID" class="flex-1 bg-[#05040a] border border-purple-900/50 rounded-xl p-3 text-xs text-white outline-none focus:border-purple-500">
-                        <button id="btn-save-client-id" class="bg-purple-600 text-white px-4 rounded-xl text-xs font-bold">Save</button>
+                        <input id="settings-client-id" type="text" value="${currentClientId === 'YOUR_GITHUB_CLIENT_ID' ? '' : currentClientId}" placeholder="Enter Client ID" class="flex-1 bg-[#050505] border border-white/10 rounded-2xl p-4 text-xs text-white outline-none focus:border-neon/50 font-bold transition-all">
+                        <button id="btn-save-client-id" class="btn-neon text-black px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest">Save</button>
                     </div>
-                    <p class="text-[9px] text-muted-purple/60">Required for authentication to work.</p>
+                    <p class="text-[9px] text-white/30 font-bold uppercase tracking-tighter ml-1">Required for authentication to work.</p>
                 </div>
             </div>
 
-            <div class="glass-card rounded-2xl overflow-hidden divide-y divide-purple-900/30">
-                <div class="p-4 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-key text-purple-400"></i>
-                        <span class="text-xs font-bold">Token Status</span>
+            <div class="glass-card rounded-3xl overflow-hidden divide-y divide-white/5 border-white/5">
+                <div class="p-5 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-neon/10 rounded-xl flex items-center justify-center text-neon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <span class="text-xs font-black text-white uppercase tracking-tight">Token Status</span>
                     </div>
-                    <span class="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded-full font-black uppercase">Active</span>
+                    <span class="text-[9px] bg-neon/10 text-neon px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-neon/20">Active</span>
                 </div>
-                <div class="p-4 flex items-center justify-between" onclick="logout()">
-                    <div class="flex items-center gap-3 text-red-400">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span class="text-xs font-bold">Sign Out</span>
+                <div class="p-5 flex items-center justify-between active:bg-red-500/5 transition-colors" onclick="logout()">
+                    <div class="flex items-center gap-4 text-red-500">
+                        <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </div>
+                        <span class="text-xs font-black uppercase tracking-tight">Sign Out</span>
                     </div>
-                    <i class="fas fa-chevron-right text-muted-purple/40 text-xs"></i>
+                    <i class="fas fa-chevron-right text-white/10 text-xs"></i>
                 </div>
             </div>
 
-            <div class="glass-card p-6 rounded-2xl space-y-4">
-                <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Setup Guide</h4>
-                <div class="space-y-3 text-xs text-muted-purple/80 leading-relaxed">
-                    <div class="flex gap-3">
-                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
-                        <p>Go to <strong>GitHub Settings</strong> > <strong>Developer settings</strong> > <strong>OAuth Apps</strong>.</p>
+            <div class="glass-card p-6 rounded-3xl space-y-5 border-white/5">
+                <h4 class="text-[10px] font-black text-neon uppercase tracking-widest">Quick Setup Guide</h4>
+                <div class="space-y-4 text-[11px] text-white/50 font-medium leading-relaxed">
+                    <div class="flex gap-4">
+                        <span class="w-6 h-6 bg-white/5 rounded-lg flex items-center justify-center text-[10px] font-black text-neon shrink-0 border border-white/10">1</span>
+                        <p>Go to <span class="text-white">GitHub Settings</span> > <span class="text-white">Developer settings</span> > <span class="text-white">OAuth Apps</span>.</p>
                     </div>
-                    <div class="flex gap-3">
-                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">2</span>
-                        <p>Click <strong>New OAuth App</strong>. Set Homepage URL to this app's URL.</p>
+                    <div class="flex gap-4">
+                        <span class="w-6 h-6 bg-white/5 rounded-lg flex items-center justify-center text-[10px] font-black text-neon shrink-0 border border-white/10">2</span>
+                        <p>Click <span class="text-white">New OAuth App</span>. Set Homepage URL to this app's URL.</p>
                     </div>
-                    <div class="flex gap-3">
-                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
-                        <p>Copy the <strong>Client ID</strong> and paste it above.</p>
+                    <div class="flex gap-4">
+                        <span class="w-6 h-6 bg-white/5 rounded-lg flex items-center justify-center text-[10px] font-black text-neon shrink-0 border border-white/10">3</span>
+                        <p>Copy the <span class="text-white">Client ID</span> and paste it above.</p>
                     </div>
-                    <div class="flex gap-3">
-                        <span class="w-5 h-5 bg-purple-900/50 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">4</span>
-                        <p><strong>CRITICAL:</strong> Check the box <strong>"Enable Device Flow"</strong> in the app settings.</p>
+                    <div class="flex gap-4">
+                        <span class="w-6 h-6 bg-white/5 rounded-lg flex items-center justify-center text-[10px] font-black text-neon shrink-0 border border-white/10">4</span>
+                        <p class="text-neon font-black"><i class="fas fa-check-circle mr-1"></i> Check the box "Enable Device Flow" in the app settings.</p>
                     </div>
                 </div>
             </div>
@@ -674,15 +725,15 @@ function getFileIcon(name) {
         'js': 'fa-js text-yellow-400',
         'html': 'fa-html5 text-orange-500',
         'css': 'fa-css3 text-blue-400',
-        'json': 'fa-code text-purple-400',
-        'md': 'fa-file-alt text-muted-purple/60',
-        'png': 'fa-image text-green-400',
-        'jpg': 'fa-image text-green-400',
-        'svg': 'fa-image text-green-400',
+        'json': 'fa-code text-neon/60',
+        'md': 'fa-file-alt text-white/40',
+        'png': 'fa-image text-neon',
+        'jpg': 'fa-image text-neon',
+        'svg': 'fa-image text-neon',
         'pdf': 'fa-file-pdf text-red-500',
-        'zip': 'fa-file-archive text-purple-500'
+        'zip': 'fa-file-archive text-neon'
     };
-    return icons[ext] || 'fa-file text-muted-purple/40';
+    return icons[ext] || 'fa-file text-white/20';
 }
 
 function formatSize(bytes) {

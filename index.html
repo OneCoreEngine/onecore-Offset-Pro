@@ -11,31 +11,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
-            --purple-dark: #05040a;
-            --purple-card: #0f0a1f;
-            --purple-accent: #9333ea;
-            --text-main: #f8fafc;
-            --text-muted: #c4b5fd;
+            --neon-green: #00ff66;
+            --dark-bg: #050505;
+            --card-bg: #111111;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-glow: rgba(0, 255, 102, 0.3);
         }
         body {
-            background-color: var(--purple-dark);
+            background-color: var(--dark-bg);
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
         .glass-card {
-            background: var(--purple-card);
-            border: 1px solid rgba(147, 51, 234, 0.15);
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 255, 102, 0.1);
         }
-        .text-muted-purple {
-            color: var(--text-muted);
+        .text-neon {
+            color: var(--neon-green);
+        }
+        .bg-neon {
+            background-color: var(--neon-green);
+        }
+        .border-neon {
+            border-color: var(--neon-green);
         }
         .nav-item.active {
-            color: var(--purple-accent);
+            color: var(--neon-green);
         }
         .nav-item.active i {
             transform: translateY(-2px);
-            text-shadow: 0 0 10px var(--purple-accent);
+            text-shadow: 0 0 15px var(--neon-green);
         }
         .safe-bottom {
             padding-bottom: env(safe-area-inset-bottom);
@@ -47,7 +54,7 @@
         /* Loader */
         .loader {
             border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid var(--purple-accent);
+            border-top: 3px solid var(--neon-green);
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -57,35 +64,44 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .btn-neon {
+            background-color: var(--neon-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .btn-neon:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <!-- Auth Screen -->
-    <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#05040a] flex flex-col items-center justify-center p-6 text-center hidden">
-        <div class="mb-8">
-            <div class="w-20 h-20 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
-                <i class="fab fa-github text-4xl text-white"></i>
+    <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#050505] flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="mb-10">
+            <div class="w-24 h-24 bg-neon rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(0,255,102,0.4)]">
+                <i class="fab fa-github text-5xl text-black"></i>
             </div>
-            <h1 class="text-2xl font-black text-white uppercase tracking-tighter">OneCore <span class="text-purple-400">GitHub</span></h1>
-            <p class="text-muted-purple mt-2 text-xs font-bold uppercase tracking-widest">File Manager Pro</p>
+            <h1 class="text-3xl font-black text-white uppercase tracking-tighter">OneCore <span class="text-neon">GitHub</span></h1>
+            <p class="text-muted-purple mt-2 text-sm font-bold uppercase tracking-widest opacity-60">File Manager Pro</p>
         </div>
 
-        <div id="login-initial" class="w-full max-w-xs">
-            <button id="btn-login" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-3">
-                <i class="fas fa-sign-in-alt"></i>
-                Sign in with GitHub
+        <div id="login-initial" class="w-full max-w-xs space-y-4">
+            <button id="btn-login" class="w-full btn-neon font-black py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
+                <i class="fas fa-bolt"></i>
+                One-Click Login
             </button>
         </div>
 
         <div id="login-device" class="w-full max-w-xs hidden">
-            <div class="glass-card p-6 rounded-2xl mb-6">
-                <p class="text-sm text-muted-purple mb-2">Enter this code on GitHub:</p>
-                <div id="user-code" class="text-3xl font-mono font-black text-purple-400 tracking-widest mb-4">---- ----</div>
-                <button id="btn-open-github" class="w-full bg-white text-black font-bold py-2 px-4 rounded-lg text-sm mb-2">
+            <div class="glass-card p-8 rounded-3xl mb-6 border-neon/30">
+                <p class="text-xs text-neon font-black uppercase tracking-widest mb-4">Verification Code</p>
+                <div id="user-code" class="text-4xl font-mono font-black text-white tracking-widest mb-6">---- ----</div>
+                <button id="btn-open-github" class="w-full bg-white text-black font-black py-3 px-4 rounded-xl text-xs uppercase tracking-widest mb-3">
                     Open GitHub
                 </button>
-                <p class="text-[10px] text-muted-purple/60">Waiting for authorization...</p>
+                <p class="text-[10px] text-white/40 font-bold uppercase tracking-tighter">Waiting for you to enter code...</p>
             </div>
             <div class="loader mx-auto"></div>
         </div>
@@ -94,15 +110,15 @@
     <!-- Main App Container -->
     <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar pb-24">
         <!-- Header -->
-        <header class="sticky top-0 z-50 bg-[#05040a]/80 backdrop-blur-md border-b border-purple-900/30 p-4 flex items-center justify-between">
+        <header class="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-md border-b border-white/5 p-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div id="user-avatar" class="w-8 h-8 rounded-full bg-purple-900 border border-purple-500/30 overflow-hidden">
+                <div id="user-avatar" class="w-9 h-9 rounded-xl bg-neon/10 border border-neon/20 overflow-hidden">
                     <img src="" alt="" class="w-full h-full object-cover hidden">
                 </div>
-                <h2 id="view-title" class="text-lg font-bold text-white">Home</h2>
+                <h2 id="view-title" class="text-lg font-black text-white uppercase tracking-tight">Home</h2>
             </div>
             <div class="flex items-center gap-2">
-                <button id="btn-refresh" class="p-2 text-muted-purple hover:text-white"><i class="fas fa-sync-alt"></i></button>
+                <button id="btn-refresh" class="p-2 text-white/40 hover:text-neon transition-colors"><i class="fas fa-sync-alt"></i></button>
             </div>
         </header>
 
