@@ -15,7 +15,9 @@ const state = {
     contents: [],
     breadcrumbs: [],
     uploadQueue: [],
-    isUploading: false
+    isUploading: false,
+    isSearchOpen: false,
+    searchResults: []
 };
 
 // DOM Elements
@@ -35,6 +37,10 @@ const elements = {
     toast: document.getElementById('toast'),
     btnRefresh: document.getElementById('btn-refresh'),
     globalLoader: document.getElementById('global-loader'),
+    btnSearchToggle: document.getElementById('btn-search-toggle'),
+    searchOverlay: document.getElementById('search-overlay'),
+    globalSearchInput: document.getElementById('global-search-input'),
+    searchResults: document.getElementById('search-results'),
     
     // Action Sheet
     actionSheet: document.getElementById('action-sheet'),
@@ -97,6 +103,11 @@ function setupEventListeners() {
         } else {
             renderTab(state.activeTab);
         }
+    });
+
+    elements.btnSearchToggle.addEventListener('click', toggleSearch);
+    elements.globalSearchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleGlobalSearch();
     });
 }
 
@@ -203,6 +214,74 @@ function renderTab(tab) {
     }
 }
 
+function toggleSearch() {
+    state.isSearchOpen = !state.isSearchOpen;
+    elements.searchOverlay.classList.toggle('hidden', !state.isSearchOpen);
+    if (state.isSearchOpen) {
+        elements.globalSearchInput.focus();
+    } else {
+        elements.searchResults.innerHTML = '';
+        elements.globalSearchInput.value = '';
+    }
+}
+
+async function handleGlobalSearch() {
+    const query = elements.globalSearchInput.value.trim();
+    if (!query) return;
+
+    elements.searchResults.innerHTML = '<div class="loader mx-auto my-4"></div>';
+    
+    try {
+        const res = await fetch(`${GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(query)}&sort=stars&order=desc`, {
+            headers: { 'Authorization': `token ${state.token}` }
+        });
+        if (!res.ok) throw new Error("Search failed");
+        const data = await res.json();
+        renderSearchResults(data.items);
+    } catch (err) {
+        showToast(err.message, 'error');
+        elements.searchResults.innerHTML = '';
+    }
+}
+
+function renderSearchResults(items) {
+    if (!items || items.length === 0) {
+        elements.searchResults.innerHTML = '<p class="text-center text-[#888888] text-[10px] py-4 uppercase font-black">No repositories found</p>';
+        return;
+    }
+
+    elements.searchResults.innerHTML = items.map(repo => `
+        <div class="glass-card p-4 rounded-2xl flex items-center justify-between border-[#333333] active:scale-[0.98] transition-all">
+            <div class="flex-1 min-w-0 pr-4">
+                <h4 class="text-xs font-black text-white truncate tracking-tight">${repo.full_name}</h4>
+                <p class="text-[9px] text-[#888888] font-bold truncate mt-1">${repo.description || 'No description'}</p>
+                <div class="flex items-center gap-3 mt-2">
+                    <span class="text-[8px] text-white/40 font-black uppercase tracking-widest"><i class="fas fa-star mr-1"></i>${repo.stargazers_count}</span>
+                    <span class="text-[8px] text-white/40 font-black uppercase tracking-widest"><i class="fas fa-code mr-1"></i>${repo.language || 'N/A'}</span>
+                </div>
+            </div>
+            <button onclick="downloadRepoZip('${repo.owner.login}', '${repo.name}', '${repo.default_branch}')" class="w-10 h-10 bg-white text-black rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                <i class="fas fa-download text-xs"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+async function downloadRepoZip(owner, repo, branch) {
+    showToast(`Starting download for ${repo}...`, 'info');
+    const url = `https://github.com/${owner}/${repo}/archive/refs/heads/${branch}.zip`;
+    
+    // Direct download link
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${repo}-${branch}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    showToast("Download initiated", 'success');
+}
+
 // --- Tab Renderers ---
 async function renderHome() {
     if (!state.currentRepo) {
@@ -286,12 +365,12 @@ function renderRepoList() {
         document.getElementById('repo-list-container').innerHTML = filtered.map(repo => `
             <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-white/5" onclick="selectRepo('${repo.full_name}')">
                 <div class="flex items-center gap-4 flex-1 min-w-0">
-                    <div class="w-12 h-12 accent-bg opacity-10 rounded-2xl flex items-center justify-center accent-text">
+                    <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
                         <i class="fas fa-book text-lg"></i>
                     </div>
                     <div class="min-w-0">
                         <h3 class="font-black text-white text-sm tracking-tight truncate">${repo.name}</h3>
-                        <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 accent-text opacity-60"></i>Private' : '<i class="fas fa-globe mr-1 accent-text opacity-60"></i>Public'}</p>
+                        <p class="text-[10px] text-white/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-white/60"></i>Private' : '<i class="fas fa-globe mr-1 text-white/60"></i>Public'}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -309,7 +388,7 @@ function renderBreadcrumbs() {
     const parts = state.currentPath ? state.currentPath.split('/') : [];
     let html = `
         <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 text-[10px] font-black uppercase tracking-widest text-white/40">
-            <span class="hover:accent-text cursor-pointer bg-white/5 px-3 py-1.5 rounded-lg border border-white/10" onclick="navigatePath('')">Root</span>
+            <span class="hover:text-white cursor-pointer bg-white/5 px-3 py-1.5 rounded-lg border border-white/10" onclick="navigatePath('')">Root</span>
     `;
     
     let path = '';
@@ -317,7 +396,7 @@ function renderBreadcrumbs() {
         path += (i === 0 ? '' : '/') + part;
         html += `
             <i class="fas fa-chevron-right text-[8px] opacity-20"></i>
-            <span class="hover:accent-text cursor-pointer ${i === parts.length - 1 ? 'accent-text' : ''}" onclick="navigatePath('${path}')">${part}</span>
+            <span class="hover:text-white cursor-pointer ${i === parts.length - 1 ? 'text-white' : ''}" onclick="navigatePath('${path}')">${part}</span>
         `;
     });
     
@@ -370,56 +449,88 @@ function renderContentsList() {
 
 function renderUpload() {
     elements.content.innerHTML = `
-        <div class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl space-y-5 border-[#333333]">
-                <h4 class="text-[10px] font-black text-white uppercase tracking-widest">Target Repository</h4>
-                <select id="upload-repo" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white appearance-none font-black uppercase tracking-tight">
-                    <option value="">Select a repository</option>
-                    ${state.repos.map(r => `<option value="${r.full_name}">${r.full_name}</option>`).join('')}
-                </select>
-                
+        <div class="space-y-8">
+            <!-- Create New Repository Section -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between px-2">
+                    <h4 class="text-[10px] font-black text-white/40 uppercase tracking-widest">Create New Repository</h4>
+                </div>
+                <div class="glass-card p-6 rounded-3xl space-y-5 border-[#333333]">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-[#888888] uppercase tracking-widest ml-1">Repository Name</label>
+                        <input id="new-repo-name" type="text" placeholder="my-awesome-project" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-bold transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-[#888888] uppercase tracking-widest ml-1">Description (Optional)</label>
+                        <input id="new-repo-desc" type="text" placeholder="A brief description..." class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-bold transition-all">
+                    </div>
+                    <div class="flex items-center justify-between p-2">
+                        <span class="text-[10px] font-black text-white uppercase tracking-widest">Private Repository</span>
+                        <button id="repo-privacy-toggle" onclick="this.classList.toggle('bg-white'); this.classList.toggle('bg-[#333333]'); this.dataset.private = this.dataset.private === 'true' ? 'false' : 'true';" data-private="false" class="w-12 h-6 bg-[#333333] rounded-full relative transition-all">
+                            <div class="w-4 h-4 bg-black rounded-full absolute top-1 left-1 transition-all"></div>
+                        </button>
+                    </div>
+                    <button onclick="createRepository()" class="w-full btn-primary font-black py-4 rounded-2xl uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all">
+                        Create Repository
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bulk Upload Section -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between px-2">
+                    <h4 class="text-[10px] font-black text-white/40 uppercase tracking-widest">Bulk Upload</h4>
+                </div>
+                <div class="glass-card p-6 rounded-3xl space-y-5 border-[#333333]">
+                    <h4 class="text-[10px] font-black text-white uppercase tracking-widest">Target Repository</h4>
+                    <select id="upload-repo" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white appearance-none font-black uppercase tracking-tight">
+                        <option value="">Select a repository</option>
+                        ${state.repos.map(r => `<option value="${r.full_name}">${r.full_name}</option>`).join('')}
+                    </select>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Branch</label>
+                            <input id="upload-branch" type="text" value="main" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-black uppercase tracking-tight transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Path</label>
+                            <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-black uppercase tracking-tight transition-all">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Branch</label>
-                        <input id="upload-branch" type="text" value="main" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-black uppercase tracking-tight transition-all">
+                    <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#333333] border-dashed border-2 hover:border-white/30">
+                        <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
+                            <i class="fas fa-file-alt text-xl"></i>
+                        </div>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-white/60">Select Files</span>
+                        <input type="file" id="file-input" multiple class="hidden">
+                    </label>
+                    <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#333333] border-dashed border-2 hover:border-white/30">
+                        <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
+                            <i class="fas fa-folder-open text-xl"></i>
+                        </div>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-white/60">Select Folder</span>
+                        <input type="file" id="folder-input" webkitdirectory class="hidden">
+                    </label>
+                </div>
+
+                <div id="upload-status" class="hidden glass-card p-6 rounded-3xl space-y-4 border-white/20">
+                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                        <span id="upload-progress-text" class="text-white">Uploading...</span>
+                        <span id="upload-percentage" class="text-white">0%</span>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Path</label>
-                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#1a1a1a] border border-[#333333] rounded-2xl p-4 text-sm text-white outline-none focus:border-white font-black uppercase tracking-tight transition-all">
+                    <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div id="upload-progress-bar" class="h-full bg-white transition-all duration-300" style="width: 0%"></div>
                     </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#333333] border-dashed border-2 hover:border-white/30">
-                    <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
-                        <i class="fas fa-file-alt text-xl"></i>
-                    </div>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-white/60">Select Files</span>
-                    <input type="file" id="file-input" multiple class="hidden">
-                </label>
-                <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#333333] border-dashed border-2 hover:border-white/30">
-                    <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white">
-                        <i class="fas fa-folder-open text-xl"></i>
-                    </div>
-                    <span class="text-[9px] font-black uppercase tracking-widest text-white/60">Select Folder</span>
-                    <input type="file" id="folder-input" webkitdirectory class="hidden">
-                </label>
+                <button id="btn-start-upload" class="w-full btn-primary font-black py-5 rounded-2xl shadow-lg uppercase tracking-widest text-xs disabled:opacity-30 transition-all" disabled>
+                    Start Upload
+                </button>
             </div>
-
-            <div id="upload-status" class="hidden glass-card p-6 rounded-3xl space-y-4 border-white/20">
-                <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                    <span id="upload-progress-text" class="text-white">Uploading...</span>
-                    <span id="upload-percentage" class="text-white">0%</span>
-                </div>
-                <div class="h-2 bg-white/5 rounded-full overflow-hidden">
-                    <div id="upload-progress-bar" class="h-full bg-white transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <button id="btn-start-upload" class="w-full btn-primary font-black py-5 rounded-2xl shadow-lg uppercase tracking-widest text-xs disabled:opacity-30 transition-all" disabled>
-                Start Upload
-            </button>
         </div>
     `;
 
@@ -475,6 +586,44 @@ function renderSettings() {
             </div>
         </div>
     `;
+}
+
+async function createRepository() {
+    const name = document.getElementById('new-repo-name').value.trim();
+    const description = document.getElementById('new-repo-desc').value.trim();
+    const isPrivate = document.getElementById('repo-privacy-toggle').dataset.private === 'true';
+
+    if (!name) return showToast("Repository name is required", 'error');
+
+    showGlobalLoader(true);
+    try {
+        const res = await fetch(`${GITHUB_API_BASE}/user/repos`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${state.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                description,
+                private: isPrivate,
+                auto_init: true
+            })
+        });
+
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || "Failed to create repository");
+        }
+
+        showToast("Repository created successfully!", 'success');
+        await fetchUserRepos();
+        renderTab('upload');
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        showGlobalLoader(false);
+    }
 }
 
 // --- API Actions ---

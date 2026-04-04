@@ -222,9 +222,19 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                <button id="btn-search-toggle" class="w-10 h-10 flex items-center justify-center text-[#888888] hover:text-white transition-colors"><i class="fas fa-search"></i></button>
                 <button id="btn-refresh" class="w-10 h-10 flex items-center justify-center text-[#888888] hover:text-white transition-colors"><i class="fas fa-sync-alt"></i></button>
             </div>
         </header>
+
+        <!-- Search Overlay -->
+        <div id="search-overlay" class="hidden px-4 py-3 bg-[#000000] border-b border-[#333333] sticky top-[73px] z-40">
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] text-xs"></i>
+                <input id="global-search-input" type="text" placeholder="Search GitHub repositories..." class="w-full bg-[#1a1a1a] border border-[#333333] rounded-xl py-3 pl-10 pr-4 text-xs text-white outline-none focus:border-white font-bold transition-all">
+            </div>
+            <div id="search-results" class="mt-3 space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar"></div>
+        </div>
 
         <!-- Dynamic Content Area -->
         <div id="content" class="p-4 space-y-4">
