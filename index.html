@@ -25,10 +25,10 @@
         }
         .glass-card {
             background: var(--bg-card);
-            border: 1px solid rgba(57, 255, 20, 0.1);
+            border: 1px solid rgba(57, 255, 20, 0.15);
         }
         .nav-item {
-            color: #888888;
+            color: #666666;
         }
         .nav-item.active {
             color: var(--accent);
@@ -68,46 +68,54 @@
         .btn-outline:active {
             background-color: rgba(57, 255, 20, 0.05);
         }
+        
+        input:focus, select:focus {
+            box-shadow: 0 0 0 2px var(--accent-glow);
+            border-color: var(--accent) !important;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <!-- Auth Screen -->
     <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center">
-        <div class="mb-10">
-            <div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+        <div class="mb-12">
+            <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(57,255,20,0.15)]">
                 <i class="fab fa-github text-6xl text-black"></i>
             </div>
-            <h1 class="text-3xl font-black text-white uppercase tracking-tighter">OneCore <span class="text-[#39ff14]">GitHub</span></h1>
-            <p class="text-white/40 mt-2 text-sm font-bold uppercase tracking-widest">File Manager Pro</p>
+            <h1 class="text-4xl font-black text-white uppercase tracking-tighter">OneCore <span class="text-[#39ff14]">GitHub</span></h1>
+            <p class="text-[#39ff14]/40 mt-3 text-xs font-black uppercase tracking-[0.3em]">File Manager Pro</p>
         </div>
 
         <div id="login-initial" class="w-full max-w-xs space-y-4">
-            <button id="btn-login" class="w-full btn-primary font-black py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
-                <i class="fab fa-github"></i>
+            <button id="btn-login" class="w-full btn-primary font-black py-5 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-sm">
+                <i class="fab fa-github text-lg"></i>
                 Login with GitHub
             </button>
-            <p class="text-[10px] text-white/40 font-bold uppercase tracking-tighter">One-Tap Secure Login</p>
+            <p class="text-[10px] text-white/30 font-bold uppercase tracking-tighter">Secure PKCE Authentication</p>
         </div>
 
         <div id="login-loading" class="w-full max-w-xs hidden">
             <div class="loader mx-auto mb-4"></div>
-            <p class="text-xs text-white/40 font-bold uppercase tracking-widest">Authenticating via popup...</p>
+            <p class="text-[10px] text-[#39ff14]/60 font-black uppercase tracking-widest">Authenticating via popup...</p>
         </div>
     </div>
 
     <!-- Main App Container -->
     <main id="app-container" class="flex-1 overflow-y-auto no-scrollbar pb-24 hidden">
         <!-- Header -->
-        <header class="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 p-4 flex items-center justify-between">
+        <header class="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-[#39ff14]/10 p-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div id="user-avatar" class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+                <div id="user-avatar" class="w-10 h-10 rounded-xl bg-[#39ff14]/5 border border-[#39ff14]/20 overflow-hidden">
                     <img src="" alt="" class="w-full h-full object-cover hidden">
                 </div>
-                <h2 id="view-title" class="text-lg font-black text-white uppercase tracking-tight">Home</h2>
+                <div>
+                    <h2 id="view-title" class="text-lg font-black text-white uppercase tracking-tight leading-none">Home</h2>
+                    <p id="view-subtitle" class="text-[9px] text-[#39ff14]/40 font-black uppercase tracking-widest mt-1">File Explorer</p>
+                </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="btn-refresh" class="p-2 text-white/40 hover:text-white transition-colors"><i class="fas fa-sync-alt"></i></button>
+                <button id="btn-refresh" class="w-10 h-10 flex items-center justify-center text-[#39ff14]/40 hover:text-[#39ff14] transition-colors"><i class="fas fa-sync-alt"></i></button>
             </div>
         </header>
 
@@ -118,29 +126,29 @@
     </main>
 
     <!-- Bottom Navigation -->
-    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 glass-card border-t border-white/5 safe-bottom z-50 hidden">
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 glass-card border-t border-[#39ff14]/10 safe-bottom z-50 hidden">
         <div class="flex items-center justify-around p-2">
             <button data-tab="home" class="nav-item flex flex-col items-center gap-1 p-2 transition-all active">
                 <i class="fas fa-home text-xl"></i>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Home</span>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Home</span>
             </button>
             <button data-tab="repos" class="nav-item flex flex-col items-center gap-1 p-2 transition-all">
                 <i class="fas fa-book text-xl"></i>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Repos</span>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Repos</span>
             </button>
             <button data-tab="upload" class="nav-item flex flex-col items-center gap-1 p-2 transition-all">
                 <i class="fas fa-cloud-upload-alt text-xl"></i>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Upload</span>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Upload</span>
             </button>
             <button data-tab="settings" class="nav-item flex flex-col items-center gap-1 p-2 transition-all">
                 <i class="fas fa-cog text-xl"></i>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Settings</span>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Settings</span>
             </button>
         </div>
     </nav>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#39ff14] text-black px-6 py-3 rounded-full text-sm font-bold shadow-2xl opacity-0 transition-all pointer-events-none z-[200]">
+    <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 bg-[#39ff14] text-black px-6 py-3 rounded-full text-xs font-black shadow-[0_0_30px_rgba(57,255,20,0.4)] opacity-0 transition-all pointer-events-none z-[200] uppercase tracking-widest">
         Notification message
     </div>
 

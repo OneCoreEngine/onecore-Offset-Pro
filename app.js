@@ -1,10 +1,11 @@
 /**
  * OneCore GitHub File Manager - Core Logic
- * Author: AI Studio Build
+ * 100% Client-Side GitHub OAuth PKCE
  */
 
 const GITHUB_API_BASE = "https://api.github.com";
 const GITHUB_AUTH_BASE = "https://github.com/login/oauth/authorize";
+const GITHUB_TOKEN_BASE = "https://github.com/login/oauth/access_token";
 const GITHUB_CLIENT_ID = "Ov231i4bnJffZb9RGhUK";
 
 // State Management
@@ -30,6 +31,7 @@ const elements = {
     appContainer: document.getElementById('app-container'),
     bottomNav: document.getElementById('bottom-nav'),
     viewTitle: document.getElementById('view-title'),
+    viewSubtitle: document.getElementById('view-subtitle'),
     content: document.getElementById('content'),
     userAvatar: document.getElementById('user-avatar'),
     navItems: document.querySelectorAll('.nav-item'),
@@ -111,20 +113,12 @@ function setupEventListeners() {
         }
     });
 
-    // Handle back button for file explorer
-    window.addEventListener('popstate', (e) => {
-        if (state.currentRepo) {
-            const path = e.state ? e.state.path : '';
-            navigatePath(path, false);
-        }
-    });
-
     // Listen for message from popup
     window.addEventListener('message', (event) => {
         if (event.origin !== window.location.origin) return;
         
-        if (event.data.access_token) {
-            handleLoginSuccess(event.data.access_token);
+        if (event.data.token) {
+            handleLoginSuccess(event.data.token);
         } else if (event.data.error) {
             showToast(event.data.error, 'error');
             elements.loginInitial.classList.remove('hidden');
@@ -224,6 +218,7 @@ function switchTab(tab) {
 function renderTab(tab) {
     elements.content.innerHTML = '';
     elements.viewTitle.textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
+    elements.viewSubtitle.textContent = tab === 'home' ? 'File Explorer' : tab === 'repos' ? 'Repository List' : tab === 'upload' ? 'Bulk Upload' : 'Account Settings';
 
     switch (tab) {
         case 'home':
@@ -246,9 +241,10 @@ async function renderHome() {
     if (!state.currentRepo) {
         elements.content.innerHTML = `
             <div class="space-y-6">
-                <div class="glass-card p-6 rounded-3xl border-[#39ff14]/20">
-                    <h3 class="text-xl font-black text-white tracking-tight">Welcome, ${state.user.name || state.user.login}!</h3>
-                    <p class="text-xs text-[#39ff14]/60 mt-1 font-bold uppercase tracking-widest">Select a repository to start managing files.</p>
+                <div class="glass-card p-6 rounded-3xl border-[#39ff14]/20 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-[#39ff14]/5 rounded-full -mr-16 -mt-16"></div>
+                    <h3 class="text-2xl font-black text-white tracking-tighter">Welcome, ${state.user.name || state.user.login}!</h3>
+                    <p class="text-[10px] text-[#39ff14]/60 mt-2 font-black uppercase tracking-[0.2em]">Select a repository to manage files.</p>
                 </div>
                 <div class="flex items-center justify-between px-2">
                     <h4 class="text-[10px] font-black text-[#39ff14]/40 uppercase tracking-widest">Recent Repositories</h4>
@@ -271,12 +267,12 @@ async function renderHome() {
                         </div>
                         <div>
                             <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                            <p class="text-[10px] text-[#39ff14]/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#39ff14]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#39ff14]/60"></i>Public'}</p>
+                            <p class="text-[10px] text-[#39ff14]/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#39ff14]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#39ff14]/60"></i>Public'}</p>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right text-[#39ff14]/20 text-xs"></i>
                 </div>
-            `).join('') || '<p class="text-center text-[#39ff14]/40 py-10 font-bold uppercase tracking-widest text-[10px]">No repositories found</p>';
+            `).join('') || '<p class="text-center text-[#39ff14]/40 py-10 font-black uppercase tracking-widest text-[10px]">No repositories found</p>';
         }
     } else {
         elements.viewTitle.textContent = state.currentRepo.name;
@@ -295,18 +291,18 @@ function renderRepoList() {
         <div class="space-y-4">
             <div class="relative">
                 <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-[#39ff14]/20 text-sm"></i>
-                <input id="repo-search" type="text" placeholder="Search repositories..." class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl py-4 pl-12 pr-4 text-sm text-white outline-none focus:border-[#39ff14]/50 transition-all font-medium">
+                <input id="repo-search" type="text" placeholder="Search repositories..." class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl py-5 pl-12 pr-4 text-sm text-white outline-none focus:border-[#39ff14]/50 transition-all font-bold uppercase tracking-tight">
             </div>
             <div id="repo-list-container" class="space-y-3">
                 ${state.repos.map(repo => `
                     <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-[#39ff14]/10" onclick="selectRepo('${repo.full_name}')">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-[#39ff14]/10 rounded-2xl flex items-center justify-center text-[#39ff14] shadow-inner">
+                            <div class="w-12 h-12 bg-[#39ff14]/10 rounded-2xl flex items-center justify-center text-[#39ff14]">
                                 <i class="fas fa-book text-lg"></i>
                             </div>
                             <div>
                                 <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                                <p class="text-[10px] text-[#39ff14]/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#39ff14]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#39ff14]/60"></i>Public'}</p>
+                                <p class="text-[10px] text-[#39ff14]/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#39ff14]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#39ff14]/60"></i>Public'}</p>
                             </div>
                         </div>
                         <i class="fas fa-chevron-right text-[#39ff14]/20 text-xs"></i>
@@ -322,12 +318,12 @@ function renderRepoList() {
         document.getElementById('repo-list-container').innerHTML = filtered.map(repo => `
             <div class="glass-card p-5 rounded-3xl flex items-center justify-between active:scale-95 transition-all border-[#39ff14]/10" onclick="selectRepo('${repo.full_name}')">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-[#39ff14]/10 rounded-2xl flex items-center justify-center text-[#39ff14] shadow-inner">
+                    <div class="w-12 h-12 bg-[#39ff14]/10 rounded-2xl flex items-center justify-center text-[#39ff14]">
                         <i class="fas fa-book text-lg"></i>
                     </div>
                     <div>
                         <h3 class="font-black text-white text-sm tracking-tight">${repo.name}</h3>
-                        <p class="text-[10px] text-[#39ff14]/40 font-bold uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#39ff14]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#39ff14]/60"></i>Public'}</p>
+                        <p class="text-[10px] text-[#39ff14]/40 font-black uppercase tracking-widest mt-0.5">${repo.private ? '<i class="fas fa-lock mr-1 text-[#39ff14]/60"></i>Private' : '<i class="fas fa-globe mr-1 text-[#39ff14]/60"></i>Public'}</p>
                     </div>
                 </div>
                 <i class="fas fa-chevron-right text-[#39ff14]/20 text-xs"></i>
@@ -399,12 +395,11 @@ function renderContentsList() {
 }
 
 function renderUpload() {
-    elements.viewTitle.textContent = "Upload Files";
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl space-y-4 border-[#39ff14]/10">
+            <div class="glass-card p-6 rounded-3xl space-y-5 border-[#39ff14]/10">
                 <h4 class="text-[10px] font-black text-[#39ff14] uppercase tracking-widest">Target Repository</h4>
-                <select id="upload-repo" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#39ff14]/50 appearance-none font-bold">
+                <select id="upload-repo" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#39ff14]/50 appearance-none font-black uppercase tracking-tight">
                     <option value="">Select a repository</option>
                     ${state.repos.map(r => `<option value="${r.full_name}">${r.full_name}</option>`).join('')}
                 </select>
@@ -412,11 +407,11 @@ function renderUpload() {
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-[#39ff14]/40 uppercase tracking-widest ml-1">Branch</label>
-                        <input id="upload-branch" type="text" value="main" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#39ff14]/50 font-bold transition-all">
+                        <input id="upload-branch" type="text" value="main" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#39ff14]/50 font-black uppercase tracking-tight transition-all">
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-[#39ff14]/40 uppercase tracking-widest ml-1">Path</label>
-                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#39ff14]/50 font-bold transition-all">
+                        <input id="upload-path" type="text" placeholder="root/" class="w-full bg-[#39ff14]/5 border border-[#39ff14]/20 rounded-2xl p-4 text-sm text-white outline-none focus:border-[#39ff14]/50 font-black uppercase tracking-tight transition-all">
                     </div>
                 </div>
             </div>
@@ -426,14 +421,14 @@ function renderUpload() {
                     <div class="w-12 h-12 bg-[#39ff14]/10 rounded-2xl flex items-center justify-center text-[#39ff14]">
                         <i class="fas fa-file-alt text-xl"></i>
                     </div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-[#39ff14]/60">Select Files</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-[#39ff14]/60">Select Files</span>
                     <input type="file" id="file-input" multiple class="hidden">
                 </label>
                 <label class="glass-card p-6 rounded-3xl flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95 transition-all border-[#39ff14]/10 border-dashed border-2 hover:border-[#39ff14]/30">
                     <div class="w-12 h-12 bg-[#39ff14]/10 rounded-2xl flex items-center justify-center text-[#39ff14]">
                         <i class="fas fa-folder-open text-xl"></i>
                     </div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-[#39ff14]/60">Select Folder</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest text-[#39ff14]/60">Select Folder</span>
                     <input type="file" id="folder-input" webkitdirectory class="hidden">
                 </label>
             </div>
@@ -444,11 +439,11 @@ function renderUpload() {
                     <span id="upload-percentage" class="text-white">0%</span>
                 </div>
                 <div class="h-2 bg-[#39ff14]/10 rounded-full overflow-hidden">
-                    <div id="upload-progress-bar" class="h-full bg-[#39ff14] transition-all duration-300 shadow-[0_0_10px_rgba(57,255,20,0.5)]" style="width: 0%"></div>
+                    <div id="upload-progress-bar" class="h-full bg-[#39ff14] transition-all duration-300 shadow-[0_0_15px_rgba(57,255,20,0.5)]" style="width: 0%"></div>
                 </div>
             </div>
 
-            <button id="btn-start-upload" class="w-full btn-primary font-black py-4 rounded-2xl shadow-lg uppercase tracking-widest text-xs disabled:opacity-30 transition-all" disabled>
+            <button id="btn-start-upload" class="w-full btn-primary font-black py-5 rounded-2xl shadow-lg uppercase tracking-widest text-xs disabled:opacity-30 transition-all" disabled>
                 Start Upload
             </button>
         </div>
@@ -470,17 +465,17 @@ function renderUpload() {
 }
 
 function renderSettings() {
-    elements.viewTitle.textContent = "Settings";
     elements.content.innerHTML = `
         <div class="space-y-6">
-            <div class="glass-card p-6 rounded-3xl flex items-center gap-5 border-[#39ff14]/10">
+            <div class="glass-card p-6 rounded-3xl flex items-center gap-6 border-[#39ff14]/10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[#39ff14]/5 rounded-full -mr-16 -mt-16"></div>
                 <div class="relative">
-                    <img src="${state.user.avatar_url}" class="w-20 h-20 rounded-2xl border-2 border-[#39ff14]/20 shadow-lg">
+                    <img src="${state.user.avatar_url}" class="w-20 h-20 rounded-2xl border-2 border-[#39ff14]/20 shadow-2xl">
                     <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-[#39ff14] rounded-full border-4 border-[#111111] shadow-lg"></div>
                 </div>
-                <div>
-                    <h3 class="text-xl font-black text-white tracking-tighter">${state.user.name || state.user.login}</h3>
-                    <p class="text-[10px] text-[#39ff14] font-black uppercase tracking-widest mt-1">@${state.user.login}</p>
+                <div class="relative z-10">
+                    <h3 class="text-2xl font-black text-white tracking-tighter leading-none">${state.user.name || state.user.login}</h3>
+                    <p class="text-[10px] text-[#39ff14] font-black uppercase tracking-widest mt-2">@${state.user.login}</p>
                 </div>
             </div>
 
@@ -490,9 +485,9 @@ function renderSettings() {
                         <div class="w-10 h-10 bg-[#39ff14]/10 rounded-xl flex items-center justify-center text-[#39ff14]">
                             <i class="fas fa-shield-alt"></i>
                         </div>
-                        <span class="text-xs font-black text-white uppercase tracking-tight">Token Status</span>
+                        <span class="text-xs font-black text-white uppercase tracking-tight">Auth Mode</span>
                     </div>
-                    <span class="text-[9px] bg-[#39ff14]/10 text-[#39ff14] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-[#39ff14]/20">Active</span>
+                    <span class="text-[9px] bg-[#39ff14]/10 text-[#39ff14] px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-[#39ff14]/20">Pure PKCE</span>
                 </div>
                 <div class="p-5 flex items-center justify-between active:bg-red-500/5 transition-colors" onclick="logout()">
                     <div class="flex items-center gap-4 text-red-500">
@@ -530,14 +525,12 @@ async function selectRepo(fullName) {
     state.breadcrumbs = [];
     await fetchRepoContents(state.currentRepo, '');
     renderTab('home');
-    history.pushState({ path: '' }, '', '');
 }
 
-async function navigatePath(path, pushState = true) {
+async function navigatePath(path) {
     state.currentPath = path;
     await fetchRepoContents(state.currentRepo, path);
     renderTab('home');
-    if (pushState) history.pushState({ path }, '', '');
 }
 
 async function fetchRepoContents(repo, path) {
@@ -700,10 +693,10 @@ function formatSize(bytes) {
 
 function showToast(message, type = 'success') {
     elements.toast.textContent = message;
-    elements.toast.className = `fixed bottom-24 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-sm font-bold shadow-2xl transition-all pointer-events-none z-[200] ${type === 'error' ? 'bg-red-600 text-white' : 'bg-[#39ff14] text-black'}`;
-    elements.toast.classList.add('opacity-100', 'bottom-28');
+    elements.toast.className = `fixed bottom-28 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-xs font-black shadow-[0_0_30px_rgba(57,255,20,0.4)] transition-all pointer-events-none z-[200] uppercase tracking-widest ${type === 'error' ? 'bg-red-600 text-white' : 'bg-[#39ff14] text-black'}`;
+    elements.toast.classList.add('opacity-100', 'bottom-32');
     setTimeout(() => {
-        elements.toast.classList.remove('opacity-100', 'bottom-28');
+        elements.toast.classList.remove('opacity-100', 'bottom-32');
     }, 3000);
 }
 
