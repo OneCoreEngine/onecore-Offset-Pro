@@ -98,11 +98,22 @@
                 Login
             </button>
 
-            <div class="glass-card p-5 rounded-2xl text-left border-[#39ff14]/10">
-                <h5 class="text-[9px] font-black text-[#39ff14] uppercase tracking-widest mb-2">How to create token:</h5>
-                <p class="text-[9px] text-white/40 font-bold leading-relaxed">
-                    GitHub Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token → Select <span class="text-[#39ff14]/60">'repo'</span> and <span class="text-[#39ff14]/60">'user'</span> scopes → Copy token.
-                </p>
+            <div class="glass-card p-5 rounded-2xl text-left border-[#39ff14]/10 space-y-3">
+                <h5 class="text-[10px] font-black text-[#39ff14] uppercase tracking-widest">🔐 How to get your Token (2 min):</h5>
+                <div class="text-[9px] text-white/60 font-bold leading-relaxed space-y-2">
+                    <p>1️⃣ Open <span class="text-[#39ff14]">GitHub.com</span> → Tap profile picture → <span class="text-white">Settings</span></p>
+                    <p>2️⃣ Scroll down → <span class="text-white">Developer settings</span> → <span class="text-white">Personal access tokens</span> → <span class="text-white">Tokens (classic)</span></p>
+                    <p>3️⃣ Click <span class="text-[#39ff14]">"Generate new token (classic)"</span></p>
+                    <p>4️⃣ Give any name, e.g., "My File Manager"</p>
+                    <p>5️⃣ Under Scopes, tick these:
+                        <br>✅ <span class="text-white">repo</span> (all options)
+                        <br>✅ <span class="text-white">user</span> (read user info)
+                    </p>
+                    <p>6️⃣ Scroll down → <span class="text-[#39ff14]">Generate token</span></p>
+                    <p>7️⃣ Copy the token (starts with <span class="text-[#39ff14]">ghp_...</span>)</p>
+                    <p>8️⃣ Paste it above and tap <span class="text-[#39ff14]">LOGIN</span></p>
+                </div>
+                <p class="text-[8px] text-[#39ff14]/40 font-black uppercase tracking-tighter mt-2 italic">⚠️ Token is like a password. Keep it secret. You can revoke it anytime.</p>
             </div>
         </div>
 
