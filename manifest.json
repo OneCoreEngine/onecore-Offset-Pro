@@ -1,23 +1,21 @@
 {
-  "name": "OneCore GitHub Manager",
-  "short_name": "GH Files",
-  "start_url": "/index.html",
+  "name": "OneCore GitHub File Manager",
+  "short_name": "OneCore GH",
+  "description": "A production-ready mobile-first PWA for managing GitHub files with OAuth PKCE authentication.",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d0b1a",
-  "theme_color": "#1a1033",
-  "orientation": "portrait",
+  "background_color": "#05040a",
+  "theme_color": "#8b5cf6",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMTkyIDE5MiI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIGZpbGw9IiM3YzNhZWQiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSI4MCIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZHk9Ii4zZW0iIHRleHQtYW5jaG9yPSJtaWRkbGUiPkdIPC90ZXh0Pjwvc3ZnPg==",
+      "src": "https://picsum.photos/seed/gh192/192/192",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiM3YzNhZWQiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIyMDAiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0iQXJpYWwiIGR5PSIuM2VtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5HSDwvdGV4dD48L3N2Zz4=",
+      "src": "https://picsum.photos/seed/gh512/512/512",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }

@@ -5,6 +5,9 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     hmr: process.env.DISABLE_HMR !== 'true',
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
   },
   build: {
     outDir: 'dist',
